@@ -95,24 +95,39 @@ public class LocalCodeReviewer {
     }
 
     public CompletableFuture<String> sendToOllama(String diffText) {
-        // String Hygiene Rule: Strictly apply string sanitization on the raw diff text before payload assembly
+        // String Hygiene Rule: Strictly apply string sanitization on the raw diff text
+        // before payload assembly
         String sanitizedDiff = diffText
                 .replace("\\", "\\\\")
                 .replace("\"", "\\\"")
                 .replace("\n", "\\n")
                 .replace("\r", "\\r");
 
-        String systemPrompt = "You are an expert Principal QA Test Automation Architect & DevOps Engineer. " +
-                "Analyze the following git diff and output a code review.\n" +
-                "Review every single modified file and check for:\n" +
-                "1. CRITICAL: Hardcoded wait statements, explicit sleeps, or timeouts (e.g., Thread.sleep, waitForTimeout, page.waitForTimeout).\n" +
-                "2. Fragile/Brittle Locators: Absolute XPaths (e.g., starting with /html/body), index-based selectors, or hardcoded text labels instead of dynamic IDs or data-test attributes.\n" +
-                "3. Hardcoded values: Credentials, URLs, API tokens, or configuration values that should be moved to properties/configuration files.\n" +
-                "4. Unstructured Logging: Use of System.out.println or printStackTrace instead of professional logger classes (e.g., Log4j2).\n" +
-                "5. Flaky Assertions: Assertions that do not wait for the UI/state to be ready or do not provide explicit failure messages.\n" +
-                "6. Resource Leaks: Missing cleanup of browser resources, pages, contexts, or database/file connections.\n\n" +
-                "Format your review clearly, listing each file and its specific issues with actionable suggestions. If a file has no issues, do not comment on it.";
+        String systemPrompt = """
+                You are an expert Senior QA Automation Engineer specializing in Playwright Java frameworks.
+                Analyze the provided git diff carefully. For each issue discovered, you must precisely pinpoint the file name and estimated line number from the diff context.
 
+                Format your entire response using clean, brief Markdown with distinct bold highlights and clear code blocks. Do not use emojis anywhere.
+
+                If a category has no issues, output exactly this line and nothing else:
+                * **Category Name**: STATUS: [PASSED]
+
+                If a category has an issue, output this exact structure:
+                * **Category Name**: STATUS: [FAILED]
+                  - **File**: [Insert exact file path here]
+                  - **Line**: [Insert estimated line number or code snippet context]
+                  - **Problem**: [Single-sentence explanation of what is wrong]
+                  - **AI Suggested Fix**:
+                    ```java
+                    // Provide the exact corrected code block here
+                    ```
+
+                Review Categories to inspect:
+                1. Playwright Web Assertions (Flag standard JUnit/TestNG assertEquals/assertTrue on UI states instead of assertThat).
+                2. Locator Robustness & Anti-Patterns (Flag absolute XPaths, index selectors, or locators instantiated inside loops).
+                3. Hardcoded Configurations & Syncs (Flag hardcoded timeouts, environment URLs, or explicit Thread.sleep).
+                4. Logging & Resource Management (Flag System.out.println or unclosed browser contexts/pages).
+                """;
         String sanitizedSystemPrompt = systemPrompt
                 .replace("\\", "\\\\")
                 .replace("\"", "\\\"")
@@ -128,7 +143,8 @@ public class LocalCodeReviewer {
                 + "{\"role\":\"user\",\"content\":\"" + sanitizedDiff + "\"}"
                 + "]"
                 + "}";
-        // Use GSON to parse the manual JSON payload to ensure validity and format correctly
+        // Use GSON to parse the manual JSON payload to ensure validity and format
+        // correctly
         Gson gson = new Gson();
         JsonObject payloadObject = gson.fromJson(rawJson, JsonObject.class);
         String jsonPayload = gson.toJson(payloadObject);
@@ -143,7 +159,8 @@ public class LocalCodeReviewer {
                 .handle((response, throwable) -> {
                     if (throwable != null) {
                         System.err.println("\n[ERROR] Failed to connect to local Ollama service.");
-                        System.err.println("[HELP] Please ensure Ollama is installed and running via: ollama run qwen2.5-coder:7b");
+                        System.err.println(
+                                "[HELP] Please ensure Ollama is installed and running via: ollama run qwen2.5-coder:7b");
                         System.err.println("[HELP] Ensure the Ollama port is accessible at: http://localhost:11434");
                         throw new RuntimeException("Ollama connection failed", throwable);
                     }
