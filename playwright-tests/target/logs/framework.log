@@ -1,0 +1,88 @@
+2026-06-18 18:19:01 [ForkJoinPool-2-worker-2] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:01 [ForkJoinPool-2-worker-1] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:01 [ForkJoinPool-2-worker-1] INFO  Hooks - Starting Scenario: Standard User can login successfully
+2026-06-18 18:19:01 [ForkJoinPool-2-worker-2] INFO  Hooks - Starting Scenario: User can interact with Dropdowns
+2026-06-18 18:19:01 [ForkJoinPool-2-worker-1] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:01 [ForkJoinPool-2-worker-2] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:01 [ForkJoinPool-2-worker-1] INFO  PlaywrightFactory - Initializing Playwright and Browser...
+2026-06-18 18:19:01 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Initializing Playwright and Browser...
+2026-06-18 18:19:03 [ForkJoinPool-2-worker-1] INFO  PlaywrightFactory - Browser Headless Mode: false
+2026-06-18 18:19:03 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Browser Headless Mode: false
+2026-06-18 18:19:03 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Browser/Page session initialized.
+2026-06-18 18:19:03 [ForkJoinPool-2-worker-1] INFO  PlaywrightFactory - Browser/Page session initialized.
+2026-06-18 18:19:03 [ForkJoinPool-2-worker-2] INFO  BasePage - Navigating to URL: https://demoqa.com/select-menu
+2026-06-18 18:19:03 [ForkJoinPool-2-worker-1] INFO  BasePage - Navigating to URL: https://www.saucedemo.com
+2026-06-18 18:19:03 [ForkJoinPool-2-worker-2] INFO  BasePage - Selecting 'Blue' from dropdown: #oldSelectMenu
+2026-06-18 18:19:03 [ForkJoinPool-2-worker-2] INFO  Hooks - Scenario PASSED: User can interact with Dropdowns
+2026-06-18 18:19:03 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Closing Browser session...
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Browser session closed and threads cleaned.
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-2] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-2] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-2] INFO  Hooks - Starting Scenario: User can manipulate data in Web Tables
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-2] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Initializing Playwright and Browser...
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Browser Headless Mode: false
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Browser/Page session initialized.
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-2] INFO  BasePage - Navigating to URL: https://demoqa.com/webtables
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-2] INFO  BasePage - Clicking on element: #addNewRecordButton
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-1] INFO  BasePage - Typing text 'standard_user' into element: #user-name
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-1] INFO  BasePage - Typing text 'secret_sauce' into element: #password
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-2] INFO  BasePage - Typing text 'Alice' into element: #firstName
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-1] INFO  BasePage - Clicking on element: #login-button
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  BasePage - Verifying successful login...
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  Hooks - Scenario PASSED: Standard User can login successfully
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  PlaywrightFactory - Closing Browser session...
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-2] INFO  BasePage - Typing text 'Smith' into element: #lastName
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-2] INFO  BasePage - Typing text 'alice@test.com' into element: #userEmail
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-2] INFO  BasePage - Typing text '25' into element: #age
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-2] INFO  BasePage - Typing text '10000' into element: #salary
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-2] INFO  BasePage - Typing text 'QA' into element: #department
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-2] INFO  BasePage - Clicking on element: #submit
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  PlaywrightFactory - Browser session closed and threads cleaned.
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  Hooks - Starting Scenario: Standard Customer Complete Purchase Flow
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  PlaywrightFactory - Initializing Playwright and Browser...
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  PlaywrightFactory - Browser Headless Mode: false
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  PlaywrightFactory - Browser/Page session initialized.
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  BasePage - Navigating to URL: https://www.saucedemo.com
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-2] INFO  BasePage - Checking visibility of element: text=alice@test.com
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-2] INFO  Hooks - Scenario PASSED: User can manipulate data in Web Tables
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Closing Browser session...
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Browser session closed and threads cleaned.
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  Hooks - Starting Scenario: User can successfully fill and submit the text box form
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Initializing Playwright and Browser...
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Browser Headless Mode: false
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Browser/Page session initialized.
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  BasePage - Navigating to URL: https://demoqa.com/text-box
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  BasePage - Typing text 'John Doe' into element: #userName
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  BasePage - Typing text 'john@test.com' into element: #userEmail
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  BasePage - Typing text '123 Main St' into element: #currentAddress
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  BasePage - Typing text '456 Oak St' into element: #permanentAddress
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  BasePage - Clicking on element: #submit
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  BasePage - Getting text from element: #name
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  Hooks - Scenario PASSED: User can successfully fill and submit the text box form
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Closing Browser session...
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Typing text 'standard_user' into element: #user-name
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Browser session closed and threads cleaned.
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-2] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Typing text 'secret_sauce' into element: #password
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Clicking on element: #login-button
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Clicking on element: [data-test='add-to-cart-sauce-labs-backpack']
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Clicking on element: .shopping_cart_link
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Clicking on element: [data-test='checkout']
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Typing text 'Jane' into element: [data-test='firstName']
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Typing text 'Doe' into element: [data-test='lastName']
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Typing text '12345' into element: [data-test='postalCode']
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Clicking on element: [data-test='continue']
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Verifying item total label visibility...
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Clicking on element: [data-test='finish']
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Verifying order completion message...
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  Hooks - Scenario PASSED: Standard Customer Complete Purchase Flow
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  PlaywrightFactory - Closing Browser session...
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  PlaywrightFactory - Browser session closed and threads cleaned.
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  Hooks - ==========================================================================

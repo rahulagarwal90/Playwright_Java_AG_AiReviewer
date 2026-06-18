@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.framework.runners.TestRunner" time="5.939" tests="5" errors="0" skipped="0" failures="0">
+  <properties>
+    <property name="java.specification.version" value="21"/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.class.path" value="/Users/rahul/Playwright_Java_Antigravity_Framework/playwright-tests/target/test-classes:/Users/rahul/Playwright_Java_Antigravity_Framework/playwright-tests/target/classes:/Users/rahul/.m2/repository/com/microsoft/playwright/playwright/1.42.0/playwright-1.42.0.jar:/Users/rahul/.m2/repository/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar:/Users/rahul/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/rahul/.m2/repository/com/microsoft/playwright/driver/1.42.0/driver-1.42.0.jar:/Users/rahul/.m2/repository/com/microsoft/playwright/driver-bundle/1.42.0/driver-bundle-1.42.0.jar:/Users/rahul/.m2/repository/io/cucumber/cucumber-java/7.15.0/cucumber-java-7.15.0.jar:/Users/rahul/.m2/repository/io/cucumber/cucumber-core/7.15.0/cucumber-core-7.15.0.jar:/Users/rahul/.m2/repository/io/cucumber/cucumber-gherkin/7.15.0/cucumber-gherkin-7.15.0.jar:/Users/rahul/.m2/repository/io/cucumber/cucumber-gherkin-messages/7.15.0/cucumber-gherkin-messages-7.15.0.jar:/Users/rahul/.m2/repository/io/cucumber/messages/22.0.0/messages-22.0.0.jar:/Users/rahul/.m2/repository/io/cucumber/tag-expressions/6.0.0/tag-expressions-6.0.0.jar:/Users/rahul/.m2/repository/io/cucumber/cucumber-expressions/17.0.1/cucumber-expressions-17.0.1.jar:/Users/rahul/.m2/repository/io/cucumber/datatable/7.15.0/datatable-7.15.0.jar:/Users/rahul/.m2/repository/io/cucumber/cucumber-plugin/7.15.0/cucumber-plugin-7.15.0.jar:/Users/rahul/.m2/repository/io/cucumber/docstring/7.15.0/docstring-7.15.0.jar:/Users/rahul/.m2/repository/io/cucumber/html-formatter/20.4.0/html-formatter-20.4.0.jar:/Users/rahul/.m2/repository/io/cucumber/junit-xml-formatter/0.2.0/junit-xml-formatter-0.2.0.jar:/Users/rahul/.m2/repository/io/cucumber/ci-environment/10.0.0/ci-environment-10.0.0.jar:/Users/rahul/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/rahul/.m2/repository/io/cucumber/cucumber-junit-platform-engine/7.15.0/cucumber-junit-platform-engine-7.15.0.jar:/Users/rahul/.m2/repository/org/junit/platform/junit-platform-engine/1.10.1/junit-platform-engine-1.10.1.jar:/Users/rahul/.m2/repository/io/cucumber/cucumber-picocontainer/7.15.0/cucumber-picocontainer-7.15.0.jar:/Users/rahul/.m2/repository/org/picocontainer/picocontainer/2.15/picocontainer-2.15.jar:/Users/rahul/.m2/repository/org/junit/platform/junit-platform-suite/1.10.1/junit-platform-suite-1.10.1.jar:/Users/rahul/.m2/repository/org/junit/platform/junit-platform-suite-api/1.10.1/junit-platform-suite-api-1.10.1.jar:/Users/rahul/.m2/repository/org/junit/platform/junit-platform-suite-engine/1.10.1/junit-platform-suite-engine-1.10.1.jar:/Users/rahul/.m2/repository/org/junit/platform/junit-platform-suite-commons/1.10.1/junit-platform-suite-commons-1.10.1.jar:/Users/rahul/.m2/repository/org/junit/platform/junit-platform-launcher/1.10.1/junit-platform-launcher-1.10.1.jar:/Users/rahul/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.1/junit-jupiter-api-5.10.1.jar:/Users/rahul/.m2/repository/org/junit/platform/junit-platform-commons/1.10.1/junit-platform-commons-1.10.1.jar:/Users/rahul/.m2/repository/io/qameta/allure/allure-cucumber7-jvm/2.25.0/allure-cucumber7-jvm-2.25.0.jar:/Users/rahul/.m2/repository/io/cucumber/gherkin/26.2.0/gherkin-26.2.0.jar:/Users/rahul/.m2/repository/io/qameta/allure/allure-java-commons/2.25.0/allure-java-commons-2.25.0.jar:/Users/rahul/.m2/repository/org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.jar:/Users/rahul/.m2/repository/io/qameta/allure/allure-model/2.25.0/allure-model-2.25.0.jar:/Users/rahul/.m2/repository/org/aeonbits/owner/owner/1.0.12/owner-1.0.12.jar:/Users/rahul/.m2/repository/org/apache/logging/log4j/log4j-api/2.22.1/log4j-api-2.22.1.jar:/Users/rahul/.m2/repository/org/apache/logging/log4j/log4j-core/2.22.1/log4j-core-2.22.1.jar:/Users/rahul/.m2/repository/org/apache/logging/log4j/log4j-slf4j2-impl/2.22.1/log4j-slf4j2-impl-2.22.1.jar:"/>
+    <property name="java.vm.vendor" value="Homebrew"/>
+    <property name="cucumber.execution.parallel.config.fixed.parallelism" value="2"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.vendor.url" value="https://github.com/Homebrew/homebrew-core/issues"/>
+    <property name="user.timezone" value="Europe/London"/>
+    <property name="cucumber.execution.parallel.enabled" value="true"/>
+    <property name="os.name" value="Mac OS X"/>
+    <property name="java.vm.specification.version" value="21"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="user.country" value="US"/>
+    <property name="sun.boot.library.path" value="/opt/homebrew/Cellar/openjdk@21/21.0.11/libexec/openjdk.jdk/Contents/Home/lib"/>
+    <property name="sun.java.command" value="/Users/rahul/Playwright_Java_Antigravity_Framework/playwright-tests/target/surefire/surefirebooter-20260618181901239_3.jar /Users/rahul/Playwright_Java_Antigravity_Framework/playwright-tests/target/surefire 2026-06-18T18-19-01_207-jvmRun1 surefire-20260618181901239_1tmp surefire_0-20260618181901239_2tmp"/>
+    <property name="http.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="/Users/rahul/Playwright_Java_Antigravity_Framework/playwright-tests/target/test-classes:/Users/rahul/Playwright_Java_Antigravity_Framework/playwright-tests/target/classes:/Users/rahul/.m2/repository/com/microsoft/playwright/playwright/1.42.0/playwright-1.42.0.jar:/Users/rahul/.m2/repository/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar:/Users/rahul/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/rahul/.m2/repository/com/microsoft/playwright/driver/1.42.0/driver-1.42.0.jar:/Users/rahul/.m2/repository/com/microsoft/playwright/driver-bundle/1.42.0/driver-bundle-1.42.0.jar:/Users/rahul/.m2/repository/io/cucumber/cucumber-java/7.15.0/cucumber-java-7.15.0.jar:/Users/rahul/.m2/repository/io/cucumber/cucumber-core/7.15.0/cucumber-core-7.15.0.jar:/Users/rahul/.m2/repository/io/cucumber/cucumber-gherkin/7.15.0/cucumber-gherkin-7.15.0.jar:/Users/rahul/.m2/repository/io/cucumber/cucumber-gherkin-messages/7.15.0/cucumber-gherkin-messages-7.15.0.jar:/Users/rahul/.m2/repository/io/cucumber/messages/22.0.0/messages-22.0.0.jar:/Users/rahul/.m2/repository/io/cucumber/tag-expressions/6.0.0/tag-expressions-6.0.0.jar:/Users/rahul/.m2/repository/io/cucumber/cucumber-expressions/17.0.1/cucumber-expressions-17.0.1.jar:/Users/rahul/.m2/repository/io/cucumber/datatable/7.15.0/datatable-7.15.0.jar:/Users/rahul/.m2/repository/io/cucumber/cucumber-plugin/7.15.0/cucumber-plugin-7.15.0.jar:/Users/rahul/.m2/repository/io/cucumber/docstring/7.15.0/docstring-7.15.0.jar:/Users/rahul/.m2/repository/io/cucumber/html-formatter/20.4.0/html-formatter-20.4.0.jar:/Users/rahul/.m2/repository/io/cucumber/junit-xml-formatter/0.2.0/junit-xml-formatter-0.2.0.jar:/Users/rahul/.m2/repository/io/cucumber/ci-environment/10.0.0/ci-environment-10.0.0.jar:/Users/rahul/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/rahul/.m2/repository/io/cucumber/cucumber-junit-platform-engine/7.15.0/cucumber-junit-platform-engine-7.15.0.jar:/Users/rahul/.m2/repository/org/junit/platform/junit-platform-engine/1.10.1/junit-platform-engine-1.10.1.jar:/Users/rahul/.m2/repository/io/cucumber/cucumber-picocontainer/7.15.0/cucumber-picocontainer-7.15.0.jar:/Users/rahul/.m2/repository/org/picocontainer/picocontainer/2.15/picocontainer-2.15.jar:/Users/rahul/.m2/repository/org/junit/platform/junit-platform-suite/1.10.1/junit-platform-suite-1.10.1.jar:/Users/rahul/.m2/repository/org/junit/platform/junit-platform-suite-api/1.10.1/junit-platform-suite-api-1.10.1.jar:/Users/rahul/.m2/repository/org/junit/platform/junit-platform-suite-engine/1.10.1/junit-platform-suite-engine-1.10.1.jar:/Users/rahul/.m2/repository/org/junit/platform/junit-platform-suite-commons/1.10.1/junit-platform-suite-commons-1.10.1.jar:/Users/rahul/.m2/repository/org/junit/platform/junit-platform-launcher/1.10.1/junit-platform-launcher-1.10.1.jar:/Users/rahul/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.1/junit-jupiter-api-5.10.1.jar:/Users/rahul/.m2/repository/org/junit/platform/junit-platform-commons/1.10.1/junit-platform-commons-1.10.1.jar:/Users/rahul/.m2/repository/io/qameta/allure/allure-cucumber7-jvm/2.25.0/allure-cucumber7-jvm-2.25.0.jar:/Users/rahul/.m2/repository/io/cucumber/gherkin/26.2.0/gherkin-26.2.0.jar:/Users/rahul/.m2/repository/io/qameta/allure/allure-java-commons/2.25.0/allure-java-commons-2.25.0.jar:/Users/rahul/.m2/repository/org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.jar:/Users/rahul/.m2/repository/io/qameta/allure/allure-model/2.25.0/allure-model-2.25.0.jar:/Users/rahul/.m2/repository/org/aeonbits/owner/owner/1.0.12/owner-1.0.12.jar:/Users/rahul/.m2/repository/org/apache/logging/log4j/log4j-api/2.22.1/log4j-api-2.22.1.jar:/Users/rahul/.m2/repository/org/apache/logging/log4j/log4j-core/2.22.1/log4j-core-2.22.1.jar:/Users/rahul/.m2/repository/org/apache/logging/log4j/log4j-slf4j2-impl/2.22.1/log4j-slf4j2-impl-2.22.1.jar:"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="/Users/rahul"/>
+    <property name="user.language" value="en"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2026-04-21"/>
+    <property name="java.home" value="/opt/homebrew/Cellar/openjdk@21/21.0.11/libexec/openjdk.jdk/Contents/Home"/>
+    <property name="file.separator" value="/"/>
+    <property name="basedir" value="/Users/rahul/Playwright_Java_Antigravity_Framework/playwright-tests"/>
+    <property name="java.vm.compressedOopsMode" value="Zero based"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="apple.awt.application.name" value="ForkedBooter"/>
+    <property name="surefire.real.class.path" value="/Users/rahul/Playwright_Java_Antigravity_Framework/playwright-tests/target/surefire/surefirebooter-20260618181901239_3.jar"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="java.runtime.version" value="21.0.11"/>
+    <property name="user.name" value="rahul"/>
+    <property name="stdout.encoding" value="UTF-8"/>
+    <property name="path.separator" value=":"/>
+    <property name="os.version" value="26.5"/>
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+    <property name="java.vendor.version" value="Homebrew"/>
+    <property name="localRepository" value="/Users/rahul/.m2/repository"/>
+    <property name="java.vendor.url.bug" value="https://github.com/Homebrew/homebrew-core/issues"/>
+    <property name="java.io.tmpdir" value="/var/folders/6k/r512f7pn3h9fgv3qy7xnq3080000gn/T/"/>
+    <property name="java.version" value="21.0.11"/>
+    <property name="user.dir" value="/Users/rahul/Playwright_Java_Antigravity_Framework/playwright-tests"/>
+    <property name="os.arch" value="aarch64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="native.encoding" value="UTF-8"/>
+    <property name="java.library.path" value="/Users/rahul/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="stderr.encoding" value="UTF-8"/>
+    <property name="java.vendor" value="Homebrew"/>
+    <property name="java.vm.version" value="21.0.11"/>
+    <property name="cucumber.execution.parallel.config.strategy" value="fixed"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeBig"/>
+    <property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="java.class.version" value="65.0"/>
+  </properties>
+  <testcase name="User can interact with Dropdowns" classname="DemoQA UI Elements Testing" time="2.448">
+    <system-out><![CDATA[
+@UI @SauceDemo @Login
+Scenario: Standard User can login successfully            &amp#27;[90m# features/saucedemo/login/login.feature:8&amp#27;[0m
+
+@UI @DemoQA @Dropdown
+Scenario: User can interact with Dropdowns                       &amp#27;[90m# features/demoqa.feature:21&amp#27;[0m
+2026-06-18 18:19:01 [ForkJoinPool-2-worker-2] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:01 [ForkJoinPool-2-worker-1] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:01 [ForkJoinPool-2-worker-2] INFO  Hooks - Starting Scenario: User can interact with Dropdowns
+2026-06-18 18:19:01 [ForkJoinPool-2-worker-1] INFO  Hooks - Starting Scenario: Standard User can login successfully
+2026-06-18 18:19:01 [ForkJoinPool-2-worker-1] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:01 [ForkJoinPool-2-worker-2] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:01 [ForkJoinPool-2-worker-1] INFO  PlaywrightFactory - Initializing Playwright and Browser...
+2026-06-18 18:19:01 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Initializing Playwright and Browser...
+2026-06-18 18:19:03 [ForkJoinPool-2-worker-1] INFO  PlaywrightFactory - Browser Headless Mode: false
+2026-06-18 18:19:03 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Browser Headless Mode: false
+2026-06-18 18:19:03 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Browser/Page session initialized.
+2026-06-18 18:19:03 [ForkJoinPool-2-worker-1] INFO  PlaywrightFactory - Browser/Page session initialized.
+2026-06-18 18:19:03 [ForkJoinPool-2-worker-2] INFO  BasePage - Navigating to URL: https://demoqa.com/select-menu
+2026-06-18 18:19:03 [ForkJoinPool-2-worker-1] INFO  BasePage - Navigating to URL: https://www.saucedemo.com
+  &amp#27;[32mGiven &amp#27;[0m&amp#27;[32mI navigate to the DemoQA Select Menu page&amp#27;[0m                &amp#27;[90m# com.framework.steps.DemoQaSteps.iNavigateToTheDemoQASelectMenuPage()&amp#27;[0m
+2026-06-18 18:19:03 [ForkJoinPool-2-worker-2] INFO  BasePage - Selecting 'Blue' from dropdown: #oldSelectMenu
+  &amp#27;[32mWhen &amp#27;[0m&amp#27;[32mI select the &amp#27;[0m&amp#27;[32m&amp#27;[1m"Blue"&amp#27;[0m&amp#27;[32m option from the Old Style Select Menu&amp#27;[0m &amp#27;[90m# com.framework.steps.DemoQaSteps.iSelectTheOptionFromTheOldStyleSelectMenu(java.lang.String)&amp#27;[0m
+  &amp#27;[32mThen &amp#27;[0m&amp#27;[32mThe selected value should be &amp#27;[0m&amp#27;[32m&amp#27;[1m"Blue"&amp#27;[0m                       &amp#27;[90m# com.framework.steps.DemoQaSteps.theSelectedValueShouldBe(java.lang.String)&amp#27;[0m
+2026-06-18 18:19:03 [ForkJoinPool-2-worker-2] INFO  Hooks - Scenario PASSED: User can interact with Dropdowns
+2026-06-18 18:19:03 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Closing Browser session...
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Browser session closed and threads cleaned.
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-2] INFO  Hooks - ==========================================================================
+]]></system-out>
+    <system-err><![CDATA[SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+]]></system-err>
+  </testcase>
+  <testcase name="User can manipulate data in Web Tables" classname="DemoQA UI Elements Testing" time="2.052">
+    <system-out><![CDATA[
+@UI @SauceDemo @E2E
+Scenario: Standard Customer Complete Purchase Flow               &amp#27;[90m# features/saucedemo/e2e/e2e.feature:8&amp#27;[0m
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  Hooks - Starting Scenario: Standard Customer Complete Purchase Flow
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  PlaywrightFactory - Initializing Playwright and Browser...
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  PlaywrightFactory - Browser Headless Mode: false
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  PlaywrightFactory - Browser/Page session initialized.
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  BasePage - Navigating to URL: https://www.saucedemo.com
+  &amp#27;[32mWhen &amp#27;[0m&amp#27;[32mI add a new record with &amp#27;[0m&amp#27;[32m&amp#27;[1m"Alice"&amp#27;[0m&amp#27;[32m, &amp#27;[0m&amp#27;[32m&amp#27;[1m"Smith"&amp#27;[0m&amp#27;[32m, &amp#27;[0m&amp#27;[32m&amp#27;[1m"alice@test.com"&amp#27;[0m&amp#27;[32m, &amp#27;[0m&amp#27;[32m&amp#27;[1m"25"&amp#27;[0m&amp#27;[32m, &amp#27;[0m&amp#27;[32m&amp#27;[1m"10000"&amp#27;[0m&amp#27;[32m, &amp#27;[0m&amp#27;[32m&amp#27;[1m"QA"&amp#27;[0m &amp#27;[90m# com.framework.steps.DemoQaSteps.iAddANewRecordWith(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)&amp#27;[0m
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-2] INFO  BasePage - Checking visibility of element: text=alice@test.com
+  &amp#27;[32mThen &amp#27;[0m&amp#27;[32mI should see &amp#27;[0m&amp#27;[32m&amp#27;[1m"alice@test.com"&amp#27;[0m&amp#27;[32m in the web table&amp#27;[0m                                  &amp#27;[90m# com.framework.steps.DemoQaSteps.iShouldSeeInTheWebTable(java.lang.String)&amp#27;[0m
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-2] INFO  Hooks - Scenario PASSED: User can manipulate data in Web Tables
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Closing Browser session...
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Browser session closed and threads cleaned.
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  Hooks - ==========================================================================
+]]></system-out>
+  </testcase>
+  <testcase name="User can successfully fill and submit the text box form" classname="DemoQA UI Elements Testing" time="0.956">
+    <system-out><![CDATA[
+@UI @DemoQA @TextBox
+Scenario: User can successfully fill and submit the text box form                                                                    &amp#27;[90m# features/demoqa.feature:8&amp#27;[0m
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  Hooks - Starting Scenario: User can successfully fill and submit the text box form
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Initializing Playwright and Browser...
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Browser Headless Mode: false
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Browser/Page session initialized.
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  BasePage - Navigating to URL: https://demoqa.com/text-box
+  &amp#27;[32mGiven &amp#27;[0m&amp#27;[32mI navigate to the DemoQA Text Box page&amp#27;[0m                                                                                       &amp#27;[90m# com.framework.steps.DemoQaSteps.iNavigateToTheDemoQATextBoxPage()&amp#27;[0m
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  BasePage - Typing text 'John Doe' into element: #userName
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  BasePage - Typing text 'john@test.com' into element: #userEmail
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  BasePage - Typing text '123 Main St' into element: #currentAddress
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  BasePage - Typing text '456 Oak St' into element: #permanentAddress
+  &amp#27;[32mWhen &amp#27;[0m&amp#27;[32mI fill the form with name &amp#27;[0m&amp#27;[32m&amp#27;[1m"John Doe"&amp#27;[0m&amp#27;[32m, email &amp#27;[0m&amp#27;[32m&amp#27;[1m"john@test.com"&amp#27;[0m&amp#27;[32m, current address &amp#27;[0m&amp#27;[32m&amp#27;[1m"123 Main St"&amp#27;[0m&amp#27;[32m and permanent address &amp#27;[0m&amp#27;[32m&amp#27;[1m"456 Oak St"&amp#27;[0m &amp#27;[90m# com.framework.steps.DemoQaSteps.iFillTheForm(java.lang.String,java.lang.String,java.lang.String,java.lang.String)&amp#27;[0m
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  BasePage - Clicking on element: #submit
+  &amp#27;[32mAnd &amp#27;[0m&amp#27;[32mI submit the form&amp#27;[0m                                                                                                              &amp#27;[90m# com.framework.steps.DemoQaSteps.iSubmitTheForm()&amp#27;[0m
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  BasePage - Getting text from element: #name
+  &amp#27;[32mThen &amp#27;[0m&amp#27;[32mI should see the output name containing &amp#27;[0m&amp#27;[32m&amp#27;[1m"Name:John Doe"&amp#27;[0m                                                                       &amp#27;[90m# com.framework.steps.DemoQaSteps.iShouldSeeTheOutputNameContaining(java.lang.String)&amp#27;[0m
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  Hooks - Scenario PASSED: User can successfully fill and submit the text box form
+2026-06-18 18:19:06 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Closing Browser session...
+  &amp#27;[32mGiven &amp#27;[0m&amp#27;[32mI navigate to SauceDemo Login&amp#27;[0m                            &amp#27;[90m# com.framework.steps.saucedemo.LoginSteps.iNavigateToSauceDemoLogin()&amp#27;[0m
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Typing text 'standard_user' into element: #user-name
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Browser session closed and threads cleaned.
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-2] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Typing text 'secret_sauce' into element: #password
+]]></system-out>
+  </testcase>
+  <testcase name="Standard User can login successfully" classname="User Login Flow" time="3.629">
+    <system-out><![CDATA[
+@UI @DemoQA @WebTable
+Scenario: User can manipulate data in Web Tables                                       &amp#27;[90m# features/demoqa.feature:15&amp#27;[0m
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-2] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-2] INFO  Hooks - Starting Scenario: User can manipulate data in Web Tables
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-2] INFO  Hooks - ==========================================================================
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Initializing Playwright and Browser...
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Browser Headless Mode: false
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-2] INFO  PlaywrightFactory - Browser/Page session initialized.
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-2] INFO  BasePage - Navigating to URL: https://demoqa.com/webtables
+  &amp#27;[32mGiven &amp#27;[0m&amp#27;[32mI navigate to the DemoQA Web Tables page&amp#27;[0m                                       &amp#27;[90m# com.framework.steps.DemoQaSteps.iNavigateToTheDemoQAWebTablesPage()&amp#27;[0m
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-2] INFO  BasePage - Clicking on element: #addNewRecordButton
+  &amp#27;[32mGiven &amp#27;[0m&amp#27;[32mI navigate to SauceDemo Login&amp#27;[0m                     &amp#27;[90m# com.framework.steps.saucedemo.LoginSteps.iNavigateToSauceDemoLogin()&amp#27;[0m
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-1] INFO  BasePage - Typing text 'standard_user' into element: #user-name
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-1] INFO  BasePage - Typing text 'secret_sauce' into element: #password
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-2] INFO  BasePage - Typing text 'Alice' into element: #firstName
+2026-06-18 18:19:04 [ForkJoinPool-2-worker-1] INFO  BasePage - Clicking on element: #login-button
+  &amp#27;[32mWhen &amp#27;[0m&amp#27;[32mI attempt login with config credentials&amp#27;[0m            &amp#27;[90m# com.framework.steps.saucedemo.LoginSteps.iAttemptLoginWithConfigCredentials()&amp#27;[0m
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  BasePage - Verifying successful login...
+  &amp#27;[32mThen &amp#27;[0m&amp#27;[32mI am successfully redirected to the Inventory Page&amp#27;[0m &amp#27;[90m# com.framework.steps.saucedemo.LoginSteps.iAmSuccessfullyRedirectedToTheInventoryPage()&amp#27;[0m
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  Hooks - Scenario PASSED: Standard User can login successfully
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  PlaywrightFactory - Closing Browser session...
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-2] INFO  BasePage - Typing text 'Smith' into element: #lastName
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-2] INFO  BasePage - Typing text 'alice@test.com' into element: #userEmail
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-2] INFO  BasePage - Typing text '25' into element: #age
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-2] INFO  BasePage - Typing text '10000' into element: #salary
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-2] INFO  BasePage - Typing text 'QA' into element: #department
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-2] INFO  BasePage - Clicking on element: #submit
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  PlaywrightFactory - Browser session closed and threads cleaned.
+2026-06-18 18:19:05 [ForkJoinPool-2-worker-1] INFO  Hooks - ==========================================================================
+]]></system-out>
+  </testcase>
+  <testcase name="Standard Customer Complete Purchase Flow" classname="End-to-End Customer Purchasing Flow" time="2.157">
+    <system-out><![CDATA[2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Clicking on element: #login-button
+  &amp#27;[32mAnd &amp#27;[0m&amp#27;[32mI attempt login with config credentials&amp#27;[0m                    &amp#27;[90m# com.framework.steps.saucedemo.LoginSteps.iAttemptLoginWithConfigCredentials()&amp#27;[0m
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Clicking on element: [data-test='add-to-cart-sauce-labs-backpack']
+  &amp#27;[32mWhen &amp#27;[0m&amp#27;[32mI add the &amp#27;[0m&amp#27;[32m&amp#27;[1m"Sauce Labs Backpack"&amp#27;[0m&amp#27;[32m to my cart&amp#27;[0m                &amp#27;[90m# com.framework.steps.saucedemo.InventorySteps.iAddTheToMyCart(java.lang.String)&amp#27;[0m
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Clicking on element: .shopping_cart_link
+  &amp#27;[32mAnd &amp#27;[0m&amp#27;[32mI go to the cart&amp#27;[0m                                           &amp#27;[90m# com.framework.steps.saucedemo.InventorySteps.iGoToTheCart()&amp#27;[0m
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Clicking on element: [data-test='checkout']
+  &amp#27;[32mAnd &amp#27;[0m&amp#27;[32mI proceed to checkout&amp#27;[0m                                      &amp#27;[90m# com.framework.steps.saucedemo.CartSteps.iProceedToCheckout()&amp#27;[0m
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Typing text 'Jane' into element: [data-test='firstName']
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Typing text 'Doe' into element: [data-test='lastName']
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Typing text '12345' into element: [data-test='postalCode']
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Clicking on element: [data-test='continue']
+  &amp#27;[32mAnd &amp#27;[0m&amp#27;[32mI enter my shipping information &amp#27;[0m&amp#27;[32m&amp#27;[1m"Jane"&amp#27;[0m&amp#27;[32m, &amp#27;[0m&amp#27;[32m&amp#27;[1m"Doe"&amp#27;[0m&amp#27;[32m, and &amp#27;[0m&amp#27;[32m&amp#27;[1m"12345"&amp#27;[0m &amp#27;[90m# com.framework.steps.saucedemo.CheckoutSteps.iEnterMyShippingInformation(java.lang.String,java.lang.String,java.lang.String)&amp#27;[0m
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Verifying item total label visibility...
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Clicking on element: [data-test='finish']
+  &amp#27;[32mAnd &amp#27;[0m&amp#27;[32mI confirm my order&amp#27;[0m                                         &amp#27;[90m# com.framework.steps.saucedemo.CheckoutSteps.iConfirmMyOrder()&amp#27;[0m
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  BasePage - Verifying order completion message...
+  &amp#27;[32mThen &amp#27;[0m&amp#27;[32mI should see the order completion message&amp#27;[0m                 &amp#27;[90m# com.framework.steps.saucedemo.CheckoutSteps.iShouldSeeTheOrderCompletionMessage()&amp#27;[0m
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  Hooks - Scenario PASSED: Standard Customer Complete Purchase Flow
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  PlaywrightFactory - Closing Browser session...
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  PlaywrightFactory - Browser session closed and threads cleaned.
+2026-06-18 18:19:07 [ForkJoinPool-2-worker-1] INFO  Hooks - ==========================================================================
+]]></system-out>
+  </testcase>
+</testsuite>

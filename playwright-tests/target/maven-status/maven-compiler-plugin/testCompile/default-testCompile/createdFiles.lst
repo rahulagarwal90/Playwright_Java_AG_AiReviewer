@@ -1,0 +1,7 @@
+com/framework/steps/saucedemo/CheckoutSteps.class
+com/framework/steps/saucedemo/LoginSteps.class
+com/framework/steps/Hooks.class
+com/framework/steps/saucedemo/InventorySteps.class
+com/framework/steps/DemoQaSteps.class
+com/framework/runners/TestRunner.class
+com/framework/steps/saucedemo/CartSteps.class
