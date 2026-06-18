@@ -1,0 +1,35 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.restore
+release.properties
+dependency-reduced-pom.xml
+build.log
+.maven-docker-cache
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+.factorypath
+
+# Playwright & Allure
+.allure/
+allure-results/
+.auth/
+user-data-dir/
+
+# Logs
+logs/
+*.log
+
+# Misc
+.DS_Store
+Thumbs.db
+.apt_generated/
+.apt_generated_tests/
