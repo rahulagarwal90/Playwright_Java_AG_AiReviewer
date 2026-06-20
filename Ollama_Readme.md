@@ -36,6 +36,7 @@ Why it matters:
 Impact:
 * Long source files, big diffs, or verbose prompts can cause the model to lose earlier context.
 * If the model forgets critical instructions, results become less accurate.
+* **Active Framework Optimization:** Our framework explicitly overrides Ollama's default 4k threshold by configuring a `16,384` token window (`num_ctx`) directly inside the Java JSON parameters to prevent truncation bugs.
 
 ### Context Window Management
 * In Ollama, the context window size is determined by the model architecture and cannot be directly changed for a specific model.
@@ -171,11 +172,11 @@ ollama cp qwen2.5-coder:7b qwen2.5-coder-copy:7b
 ## 5. Recommended Models and Limitations
 
 ### Best models for this repository
-| Task | Recommended Model | RAM Footprint | Default Context | Target Use Case |
-| --- | --- | --- | --- | --- |
-| Code review & generation | `qwen3-coder:14b` | ~9.0 GB | 4,096 tokens (up to 256k native) | Strict Git parsing, mathematical line counting, step architecture. |
-| Fast local code triage | `qwen2.5-coder:7b` | ~4.7 GB | 4,096 tokens | Light inline completions and immediate text sorting tasks. |
-| High-level planning | `llama3.1:8b` | ~4.7 GB | 8,192 tokens | Layout mapping, test plan architecture definitions. |
+| Task | Recommended model | Why | Limitation |
+| --- | --- | --- | --- |
+| Code review and code generation | `qwen2.5-coder:14b` | Best accuracy, precise line math calculations, and code reasoning. | Uses more RAM (~9GB VRAM footprint). |
+| Fast local review or quick prompts | `qwen2.5-coder:7b` | Good speed with reasonable accuracy for lightweight checks. | More likely to hallucinate on large context windows. |
+| High-level design, architecture, or summary | `llama3.1:8b` | Great for planning, design documentation, and structural explanations. | Less precise for exact code execution output lines. |
 
 ### Choosing the right model
 * Use `qwen3-coder:14b` for the strongest code reasoning and best chance of correct edits.
