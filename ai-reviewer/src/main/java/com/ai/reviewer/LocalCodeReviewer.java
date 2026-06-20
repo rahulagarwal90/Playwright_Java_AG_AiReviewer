@@ -42,7 +42,7 @@ public class LocalCodeReviewer {
                 System.out.println(">>> Tip: Edit or stage files in git before running the code reviewer.");
                 return CompletableFuture.completedFuture("No changes");
             }
-            System.out.println(">>> Sending changes to local Ollama (model: qwen2.5-coder:7b)...");
+            System.out.println(">>> Sending changes to local Ollama (model: qwen2.5-coder:14b)...");
             return sendToOllama(filteredDiff);
         } catch (Exception e) {
             System.err.println("[ERROR] Failed to execute git diff: " + e.getMessage());
@@ -92,10 +92,55 @@ public class LocalCodeReviewer {
         return filtered.toString();
     }
 
+    public static String annotateDiffWithLineNumbers(String diffText) {
+        if (diffText == null || diffText.isEmpty()) {
+            return diffText;
+        }
+
+        StringBuilder annotated = new StringBuilder();
+        String[] lines = diffText.split("\n");
+        int currentNewLine = -1;
+
+        for (String line : lines) {
+            if (line.startsWith("@@")) {
+                // Example header: @@ -13,6 +13,30 @@
+                String[] parts = line.split(" ");
+                for (String part : parts) {
+                    if (part.startsWith("+")) {
+                        String[] range = part.substring(1).split(",");
+                        try {
+                            currentNewLine = Integer.parseInt(range[0]);
+                        } catch (NumberFormatException ignored) {
+                            currentNewLine = -1;
+                        }
+                        break;
+                    }
+                }
+                annotated.append(line).append("\n");
+            } else if (line.startsWith("+") && !line.startsWith("+++")) {
+                if (currentNewLine > 0) {
+                    annotated.append("[Line ").append(currentNewLine).append("] ").append(line).append("\n");
+                    currentNewLine++;
+                } else {
+                    annotated.append(line).append("\n");
+                }
+            } else {
+                annotated.append(line).append("\n");
+                if (line.startsWith(" ") && currentNewLine > 0) {
+                    currentNewLine++;
+                }
+            }
+        }
+
+        return annotated.toString();
+    }
+
     public CompletableFuture<String> sendToOllama(String diffText) {
+        String annotatedDiff = annotateDiffWithLineNumbers(diffText);
+
         // String Hygiene Rule: Strictly apply string sanitization on the raw diff text
         // before payload assembly
-        String sanitizedDiff = diffText
+        String sanitizedDiff = annotatedDiff
                 .replace("\\", "\\\\")
                 .replace("\"", "\\\"")
                 .replace("\n", "\\n")
@@ -131,7 +176,7 @@ public class LocalCodeReviewer {
 
         // Assemble raw JSON manually applying the sanitization
         String rawJson = "{"
-                + "\"model\":\"qwen3-coder:14b\"," // Upgraded brain
+                + "\"model\":\"qwen2.5-coder:14b\"," // Upgraded brain
                 + "\"stream\":false,"
                 + "\"messages\":["
                 + "{\"role\":\"system\",\"content\":\"" + sanitizedSystemPrompt + "\"},"
