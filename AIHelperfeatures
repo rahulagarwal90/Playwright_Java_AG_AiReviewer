@@ -1,0 +1,22 @@
+1. Dynamic Locator Synthesis & Healing
+•	Contextual DOM Extraction: Instead of passing raw, heavy HTML, it captures target components along with adjacent accessibility properties to calculate stable, user-facing Playwright semantic selectors (e.g., getByRole, getByLabel).
+•	Self-Healing Selectors: When an execution encounters a TimeoutException, the helper automatically matches the broken selector against a localized schema dictionary to find the structural change and suggest an active patch runtime.
+2. Autonomous Test Case Generation
+•	Gherkin-to-Code Mapping: Parses raw business requirements (.feature files) and automatically drafts syntactically correct, structurally isolated Playwright step definitions using your active TestContext model.
+•	Boundary & Negative Input Injections: Analyzes your existing application forms and automatically generates boundary tests, edge-case assertions, and valid error-handling logic paths.
+3. Smart Execution Control & Flaky Test Triaging
+•	Intelligent Retry Analysis: Rather than running blanket retries, the helper analyzes standard error logs. It separates environmental network blips from genuine application race conditions.
+•	Dynamic Sychronization Engine: Automatically intercepts timing failures and swaps raw waits for modern, assertion-driven conditional checks (page.waitForCondition()).
+
+
+### 1. Dynamic Locator Synthesis & Healing
+* **Contextual DOM Extraction:** Captures localized components along with accessibility parameters to calculate stable Playwright user-facing semantic selectors (like getByRole and getByLabel).
+* **Self-Healing Selectors:** Automatically intercepts runtime TimeoutException errors, parses the updated UI state, and applies real-time locator repairs.
+
+### 2. Autonomous Test Case Generation
+* **Gherkin-to-Code Mapping:** Scans .feature text requirements and constructs isolated, executable Playwright step definitions using your project's active TestContext model.
+* **Boundary & Negative Input Injections:** Analyzes input forms dynamically to insert boundary limits, invalid parameters, and negative edge cases.
+
+### 3. Smart Execution Control & Flaky Test Triaging
+* **Intelligent Retry Analysis:** Evaluates error streams to isolate infrastructure/network environment drops from true application state crashes.
+* **Dynamic Synchronization Engine:** Intercepts timing failures and substitutes arbitrary hardcoded timeouts with state-driven conditional checks.

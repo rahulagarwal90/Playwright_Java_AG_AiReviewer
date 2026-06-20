@@ -53,6 +53,7 @@ public class LocalCodeReviewer {
     }
 
     public String getGitDiff() throws Exception {
+        // Natively targets both unstaged and staged changes in a single raw stream
         ProcessBuilder pb = new ProcessBuilder("git", "diff", "HEAD", "--", ".", ":!**/LocalCodeReviewer.java");
         Process process = pb.start();
         String diffText;
@@ -101,30 +102,27 @@ public class LocalCodeReviewer {
                 .replace("\r", "\\r");
 
         String systemPrompt = """
-                You are an exceptionally strict automated Code Reviewer specializing in Java Playwright test automation frameworks.
-                Your job is to analyze every single line of the provided git diff text mathematically and deterministically.
+                You are an exceptionally strict automated Code Reviewer specializing in Java Playwright test frameworks.
+                Review the provided plain text modifications line-by-line.
 
-                CRITICAL CATEGORY FILTERING:
-                - Assess each code change independently. You must place a defect strictly in its most relevant category. Do not duplicate or report the same line item or problem across multiple categories.
-                - Playwright Web Assertions: Only flag legacy assertions (e.g., JUnit/TestNG assertTrue/assertEquals).
-                - Locator Robustness: Only flag brittle locators (e.g., absolute XPaths, long dynamic CSS) or missing page.getBy* API usage.
-                - Hardcoded Configurations: Only flag hardcoded synchronizations (e.g., Thread.sleep) or hardcoded environment strings.
+                CRITICAL SORTING RULES:
+                - Assess each code change independently. Place a defect strictly in its single most relevant category. Do not repeat issues.
+                - Playwright Web Assertions: Only flag legacy assertions (e.g., plain java assert, JUnit, or TestNG assertions).
+                - Locator Robustness: Only flag brittle locators (e.g., absolute XPaths, long dynamic CSS).
+                - Hardcoded Configurations: Only flag hardcoded synchronizations (e.g., Thread.sleep).
                 - Logging: Only flag plain standard output statements (e.g., System.out.println, printStackTrace).
 
-                UNIVERSAL FIX REQUIREMENTS:
+                UNIVERSAL OUTPUT FORMAT:
                 - If a category passes, print exactly: [Category Name]: STATUS: [PASSED]
                 - If a category fails, print exactly:
                    [Category Name]: STATUS: [FAILED]
-                   File: [Exact Path]
-                   Line: [Line Number]
+                   File: [Provide the file path]
+                   Line: [Provide the line number if visible]
                    Problem: [Clear explanation of why the code violates automation best practices]
                    AI Suggested Fix:
-                   [Provide the exact, syntactically correct Java code snippet that completely refactors or replaces the bad code. The code must be production-ready and specific to the exact element or method being modified in the diff.]
-
-                OUTPUT FORMATTING:
-                1. Do not use markdown syntax, asterisks, or backticks anywhere in your output. Return only plain, human-readable text.
-                2. Never merge multiple files or distinct line errors into a single block. Each finding must get a standalone text structure.
+                   [Provide the exact, syntactically correct Java code snippet that replaces the bad code completely using active variables like testContext.getPage(). Do not use markdown backticks or asterisks.]
                 """;
+
         String sanitizedSystemPrompt = systemPrompt
                 .replace("\\", "\\\\")
                 .replace("\"", "\\\"")
@@ -133,15 +131,16 @@ public class LocalCodeReviewer {
 
         // Assemble raw JSON manually applying the sanitization
         String rawJson = "{"
-                + "\"model\":\"qwen2.5-coder:7b\","
+                + "\"model\":\"qwen3-coder:14b\"," // Upgraded brain
                 + "\"stream\":false,"
                 + "\"messages\":["
-                + "{\"role\":\"system\",\"content\":\"" + systemPrompt + "\"},"
+                + "{\"role\":\"system\",\"content\":\"" + sanitizedSystemPrompt + "\"},"
                 + "{\"role\":\"user\",\"content\":\"" + sanitizedDiff + "\"}"
                 + "],"
                 + "\"options\":{"
                 + "\"temperature\":0.0,"
-                + "\"top_p\":0.1"
+                + "\"top_p\":0.1,"
+                + "\"num_ctx\":16384" // Injected 16k Context Window mapping here
                 + "}"
                 + "}";
         // Use GSON to parse the manual JSON payload to ensure validity and format
