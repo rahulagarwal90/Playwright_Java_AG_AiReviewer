@@ -53,7 +53,7 @@ public class LocalCodeReviewer {
     }
 
     public String getGitDiff() throws Exception {
-        ProcessBuilder pb = new ProcessBuilder("git", "diff", "HEAD");
+        ProcessBuilder pb = new ProcessBuilder("git", "diff", "HEAD", "--", ".", ":!**/LocalCodeReviewer.java");
         Process process = pb.start();
         String diffText;
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
@@ -101,29 +101,29 @@ public class LocalCodeReviewer {
                 .replace("\r", "\\r");
 
         String systemPrompt = """
-                You are an expert Senior QA Automation Engineer specializing in Playwright Java frameworks.
-                Analyze the provided git diff carefully. For each issue discovered, you must precisely pinpoint the file name and estimated line number from the diff context.
+                You are an exceptionally strict automated Code Reviewer specializing in Java Playwright test automation frameworks.
+                Your job is to analyze every single line of the provided git diff text mathematically and deterministically.
 
-                Format your entire response using clean, brief Markdown with distinct bold highlights and clear code blocks. Do not use emojis anywhere.
+                CRITICAL CATEGORY FILTERING:
+                - Assess each code change independently. You must place a defect strictly in its most relevant category. Do not duplicate or report the same line item or problem across multiple categories.
+                - Playwright Web Assertions: Only flag legacy assertions (e.g., JUnit/TestNG assertTrue/assertEquals).
+                - Locator Robustness: Only flag brittle locators (e.g., absolute XPaths, long dynamic CSS) or missing page.getBy* API usage.
+                - Hardcoded Configurations: Only flag hardcoded synchronizations (e.g., Thread.sleep) or hardcoded environment strings.
+                - Logging: Only flag plain standard output statements (e.g., System.out.println, printStackTrace).
 
-                If a category has no issues, output exactly this line and nothing else:
-                * **Category Name**: STATUS: [PASSED]
+                UNIVERSAL FIX REQUIREMENTS:
+                - If a category passes, print exactly: [Category Name]: STATUS: [PASSED]
+                - If a category fails, print exactly:
+                   [Category Name]: STATUS: [FAILED]
+                   File: [Exact Path]
+                   Line: [Line Number]
+                   Problem: [Clear explanation of why the code violates automation best practices]
+                   AI Suggested Fix:
+                   [Provide the exact, syntactically correct Java code snippet that completely refactors or replaces the bad code. The code must be production-ready and specific to the exact element or method being modified in the diff.]
 
-                If a category has an issue, output this exact structure:
-                * **Category Name**: STATUS: [FAILED]
-                  - **File**: [Insert exact file path here]
-                  - **Line**: [Insert estimated line number or code snippet context]
-                  - **Problem**: [Single-sentence explanation of what is wrong]
-                  - **AI Suggested Fix**:
-                    ```java
-                    // Provide the exact corrected code block here
-                    ```
-
-                Review Categories to inspect:
-                1. Playwright Web Assertions (Flag standard JUnit/TestNG assertEquals/assertTrue on UI states instead of assertThat).
-                2. Locator Robustness & Anti-Patterns (Flag absolute XPaths, index selectors, or locators instantiated inside loops).
-                3. Hardcoded Configurations & Syncs (Flag hardcoded timeouts, environment URLs, or explicit Thread.sleep).
-                4. Logging & Resource Management (Flag System.out.println or unclosed browser contexts/pages).
+                OUTPUT FORMATTING:
+                1. Do not use markdown syntax, asterisks, or backticks anywhere in your output. Return only plain, human-readable text.
+                2. Never merge multiple files or distinct line errors into a single block. Each finding must get a standalone text structure.
                 """;
         String sanitizedSystemPrompt = systemPrompt
                 .replace("\\", "\\\\")
@@ -136,9 +136,13 @@ public class LocalCodeReviewer {
                 + "\"model\":\"qwen2.5-coder:7b\","
                 + "\"stream\":false,"
                 + "\"messages\":["
-                + "{\"role\":\"system\",\"content\":\"" + sanitizedSystemPrompt + "\"},"
+                + "{\"role\":\"system\",\"content\":\"" + systemPrompt + "\"},"
                 + "{\"role\":\"user\",\"content\":\"" + sanitizedDiff + "\"}"
-                + "]"
+                + "],"
+                + "\"options\":{"
+                + "\"temperature\":0.0,"
+                + "\"top_p\":0.1"
+                + "}"
                 + "}";
         // Use GSON to parse the manual JSON payload to ensure validity and format
         // correctly

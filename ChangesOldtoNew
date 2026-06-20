@@ -1,0 +1,12 @@
+Playwright_Java_Antigravity_Framework (Old Baseline)
+└── pom.xml (Standard single-framework layout)
+└── playwright-tests/ (Contains your core page objects and step definitions)
+
+Playwright_Java_AG_AiReviewer (New AI Hub)
+├── pom.xml (Modified to a Multi-Module parent container)
+├── ai-reviewer/ (NEW MODULE ADDED)
+│   ├── pom.xml (New configuration handling Java HTTP Client and JSON logic)
+│   └── src/main/java/com/ai/reviewer/LocalCodeReviewer.java (NEW FILE CREATED)
+│       └── [Modified ProcessBuilder to filter git diff HEAD via exclusion parameters]
+│       └── [Modified JSON payload to hardcode temperature: 0.0, top_p: 0.1]
+└── playwright-tests/ (Existing automated testing scripts)
