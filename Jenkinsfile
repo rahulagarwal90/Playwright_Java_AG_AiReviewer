@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven 3.8' // Configure in Jenkins Global Tool Configuration
-        jdk 'JDK 17'      // Configure in Jenkins Global Tool Configuration
+        maven 'Maven 3.9' // Configure in Jenkins Global Tool Configuration
+        jdk 'JDK 21'      // Configure in Jenkins Global Tool Configuration
     }
 
     parameters {
@@ -29,7 +29,7 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh 'mvn exec:java -e -D exec.mainClass="com.microsoft.playwright.CLI" -D exec.args="install --with-deps"'
+                        sh 'mvn exec:java -e -Dexec.mainClass="com.microsoft.playwright.CLI" -Dexec.args="install --with-deps"'
                     } else {
                         bat 'mvn exec:java -e -D exec.mainClass="com.microsoft.playwright.CLI" -D exec.args="install --with-deps"'
                     }

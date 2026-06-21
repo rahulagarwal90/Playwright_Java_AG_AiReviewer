@@ -1,14 +1,22 @@
 package com.ai.reviewer;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -32,13 +40,37 @@ public class LocalCodeReviewer {
      * Entry point for command-line execution.
      * Runs the reviewer and waits for the review task to complete.
      */
+        private static final Pattern REVIEW_FINDING_PATTERN = Pattern.compile(
+            "\\[(.*?)\\]: STATUS: \\[" +
+                "(FAILED|PASSED)\\]\\s*File:\\s*(.*?)\\s*Line:\\s*(\\d+)\\s*Problem:\\s*(.*?)\\s*AI Suggested Fix:\\s*(.*?)(?=\\n\\[.*?\\]: STATUS: \\[[A-Z]+\\]|\\z)",
+            Pattern.DOTALL);
+
     public static void main(String[] args) {
         LocalCodeReviewer reviewer = new LocalCodeReviewer();
+        int exitCode = 0;
         try {
-            reviewer.runReview().join();
+            String reviewText = reviewer.runReview().join();
+            List<ReviewFinding> findings = parseReviewFindings(reviewText);
+            List<ReviewFinding> failedFindings = findings.stream()
+                    .filter(finding -> "FAILED".equalsIgnoreCase(finding.status))
+                    .toList();
+            if (!failedFindings.isEmpty()) {
+                System.err.println("[ERROR] AI Code Quality Gate detected failures.");
+                if (reviewer.isGitHubContext()) {
+                    System.err.println("[INFO] Posting line-level PR review comments to GitHub.");
+                    reviewer.postGitHubReviewComments(failedFindings);
+                } else {
+                    System.err.println("[WARN] GitHub review context is not configured; comments will not be posted.");
+                }
+                exitCode = 1;
+            } else {
+                System.out.println("[INFO] AI Code Quality Gate passed. No failed categories detected.");
+            }
         } catch (Exception e) {
             System.err.println("[ERROR] Exception during execution: " + e.getMessage());
+            exitCode = 1;
         }
+        System.exit(exitCode);
     }
 
     /**
@@ -70,6 +102,13 @@ public class LocalCodeReviewer {
      * Excludes the reviewer source file so the tool does not attempt to review itself.
      */
     public String getGitDiff() throws Exception {
+        if (isGitHubContext()) {
+            return getPullRequestDiffFromGitHub();
+        }
+        return getLocalGitDiff();
+    }
+
+    private String getLocalGitDiff() throws Exception {
         // Natively targets both unstaged and staged changes in a single raw stream
         ProcessBuilder pb = new ProcessBuilder("git", "diff", "HEAD", "--", ".", ":!**/LocalCodeReviewer.java");
         Process process = pb.start();
@@ -79,6 +118,90 @@ public class LocalCodeReviewer {
         }
         process.waitFor();
         return diffText;
+    }
+
+    private String getPullRequestDiffFromGitHub() throws Exception {
+        String repo = getGitHubRepository();
+        String prNumber = getGitHubPullRequestNumber();
+        String apiBase = getGitHubApiBase();
+        String token = getGitHubToken();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(String.format("%s/repos/%s/pulls/%s", apiBase, repo, prNumber)))
+                .header("Accept", "application/vnd.github.v3.diff")
+                .header("Authorization", "Bearer " + token)
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        if (response.statusCode() != 200) {
+            throw new RuntimeException("Failed to fetch PR diff from GitHub: " + response.statusCode() + " " + response.body());
+        }
+        return response.body();
+    }
+
+    private boolean isGitHubContext() {
+        return Optional.ofNullable(System.getenv("GITHUB_REPOSITORY")).filter(s -> !s.isBlank()).isPresent()
+                && (Optional.ofNullable(System.getenv("GITHUB_PR_NUMBER")).filter(s -> !s.isBlank()).isPresent()
+                || Optional.ofNullable(System.getenv("CHANGE_ID")).filter(s -> !s.isBlank()).isPresent())
+                && Optional.ofNullable(System.getenv("GITHUB_TOKEN")).filter(s -> !s.isBlank()).isPresent();
+    }
+
+    private String getGitHubRepository() {
+        String repository = System.getenv("GITHUB_REPOSITORY");
+        if (repository != null && !repository.isBlank()) {
+            return repository;
+        }
+        String changeUrl = System.getenv("CHANGE_URL");
+        if (changeUrl != null && !changeUrl.isBlank()) {
+            String[] parts = changeUrl.split("/");
+            if (parts.length >= 2) {
+                return parts[parts.length - 2] + "/" + parts[parts.length - 1];
+            }
+        }
+        throw new IllegalStateException("Missing required GitHub repository context: GITHUB_REPOSITORY or CHANGE_URL");
+    }
+
+    private String getGitHubPullRequestNumber() {
+        String prNumber = System.getenv("GITHUB_PR_NUMBER");
+        if (prNumber != null && !prNumber.isBlank()) {
+            return prNumber;
+        }
+        prNumber = System.getenv("CHANGE_ID");
+        if (prNumber != null && !prNumber.isBlank()) {
+            return prNumber;
+        }
+        throw new IllegalStateException("Missing required GitHub PR number context: GITHUB_PR_NUMBER or CHANGE_ID");
+    }
+
+    private String getGitHubToken() {
+        String token = System.getenv("GITHUB_TOKEN");
+        if (token == null || token.isBlank()) {
+            throw new IllegalStateException("Missing required GitHub token: GITHUB_TOKEN");
+        }
+        return token;
+    }
+
+    private String getGitHubApiBase() {
+        return Optional.ofNullable(System.getenv("GITHUB_API_URL")).filter(s -> !s.isBlank()).orElse("https://api.github.com");
+    }
+
+    private String getGitCommitSha() throws Exception {
+        String gitCommit = System.getenv("GIT_COMMIT");
+        if (gitCommit != null && !gitCommit.isBlank()) {
+            return gitCommit;
+        }
+        ProcessBuilder pb = new ProcessBuilder("git", "rev-parse", "HEAD");
+        Process process = pb.start();
+        String sha;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            sha = reader.lines().collect(Collectors.joining("\n")).trim();
+        }
+        process.waitFor();
+        if (sha.isBlank()) {
+            throw new RuntimeException("Cannot determine current Git commit SHA.");
+        }
+        return sha;
     }
 
     /**
@@ -158,6 +281,75 @@ public class LocalCodeReviewer {
         }
 
         return annotated.toString();
+    }
+
+    private static List<ReviewFinding> parseReviewFindings(String reviewText) {
+        List<ReviewFinding> findings = new ArrayList<>();
+        Matcher matcher = REVIEW_FINDING_PATTERN.matcher(reviewText + "\n");
+        while (matcher.find()) {
+            ReviewFinding finding = new ReviewFinding();
+            finding.category = matcher.group(1).trim();
+            finding.status = matcher.group(2).trim();
+            finding.file = matcher.group(3).trim();
+            finding.line = Integer.parseInt(matcher.group(4).trim());
+            finding.problem = matcher.group(5).trim();
+            finding.suggestedFix = matcher.group(6).trim();
+            findings.add(finding);
+        }
+        return findings;
+    }
+
+    private void postGitHubReviewComments(List<ReviewFinding> findings) throws Exception {
+        String repo = getGitHubRepository();
+        String prNumber = getGitHubPullRequestNumber();
+        String apiBase = getGitHubApiBase();
+        String commitSha = getGitCommitSha();
+
+        for (ReviewFinding finding : findings) {
+            createGitHubPullRequestComment(repo, prNumber, apiBase, commitSha, finding);
+        }
+    }
+
+    private void createGitHubPullRequestComment(String repo,
+                                                String prNumber,
+                                                String apiBase,
+                                                String commitSha,
+                                                ReviewFinding finding) throws Exception {
+        JsonObject payload = new JsonObject();
+        payload.addProperty("body", buildCommentBody(finding));
+        payload.addProperty("path", finding.file);
+        payload.addProperty("line", finding.line);
+        payload.addProperty("side", "RIGHT");
+        payload.addProperty("commit_id", commitSha);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(String.format("%s/repos/%s/pulls/%s/comments", apiBase, repo, prNumber)))
+                .header("Accept", "application/vnd.github.v3+json")
+                .header("Authorization", "Bearer " + getGitHubToken())
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(new Gson().toJson(payload), StandardCharsets.UTF_8))
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        if (response.statusCode() < 200 || response.statusCode() > 299) {
+            throw new RuntimeException("GitHub PR comment creation failed: " + response.statusCode() + " " + response.body());
+        }
+    }
+
+    private String buildCommentBody(ReviewFinding finding) {
+        return String.format("[AI CODE QUALITY GATE] %s FAILURE\nProblem: %s\nSuggested fix:\n%s",
+                finding.category,
+                finding.problem,
+                finding.suggestedFix);
+    }
+
+    private static class ReviewFinding {
+        String category;
+        String status;
+        String file;
+        int line;
+        String problem;
+        String suggestedFix;
     }
 
     /**
