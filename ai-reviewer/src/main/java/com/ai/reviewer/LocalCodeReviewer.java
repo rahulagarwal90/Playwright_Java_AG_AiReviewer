@@ -41,8 +41,8 @@ public class LocalCodeReviewer {
      * Runs the reviewer and waits for the review task to complete.
      */
         private static final Pattern REVIEW_FINDING_PATTERN = Pattern.compile(
-            "\\[(.*?)\\]: STATUS: \\[" +
-                "(FAILED|PASSED)\\]\\s*File:\\s*(.*?)\\s*Line:\\s*(\\d+)\\s*Problem:\\s*(.*?)\\s*AI Suggested Fix:\\s*(.*?)(?=\\n\\[.*?\\]: STATUS: \\[[A-Z]+\\]|\\z)",
+            "(?:\\*\\*|\\[)?(.*?)(?:\\*\\*|\\])?: STATUS: \\[" +
+                "(FAILED|PASSED)\\]\\s*File:\\s*(.*?)\\s*Line:\\s*(\\d+)\\s*Problem:\\s*(.*?)\\s*AI Suggested Fix:\\s*(.*?)(?=\\n(?:(?:\\*\\*|\\[)?.*?STATUS: \\[[A-Z]+\\]|\\z))",
             Pattern.DOTALL);
 
     public static void main(String[] args) {
@@ -288,7 +288,7 @@ public class LocalCodeReviewer {
         Matcher matcher = REVIEW_FINDING_PATTERN.matcher(reviewText + "\n");
         while (matcher.find()) {
             ReviewFinding finding = new ReviewFinding();
-            finding.category = matcher.group(1).trim();
+            finding.category = matcher.group(1).replace("*", "").replace("[", "").replace("]", "").trim();
             finding.status = matcher.group(2).trim();
             finding.file = matcher.group(3).trim();
             finding.line = Integer.parseInt(matcher.group(4).trim());
