@@ -337,7 +337,16 @@ public class LocalCodeReviewer {
             // This handles formats like "**Playwright Web Assertions:**" or "[Category]:"
             String[] lines = trimmed.split("\\n");
             String categoryLine = lines[0].trim();
-            String category = categoryLine.replaceAll("^\\*\\*", "")
+
+                // Some model responses emit "Category: STATUS: FAILED" on one line.
+                String status = "PASSED";
+                Matcher inlineStatusMatcher = Pattern.compile("(?i)^(.+?):\\s*STATUS:\\s*\\[?(FAILED|PASSED)\\]?").matcher(categoryLine);
+                if (inlineStatusMatcher.find()) {
+                categoryLine = inlineStatusMatcher.group(1).trim();
+                status = inlineStatusMatcher.group(2).toUpperCase();
+                }
+
+                String category = categoryLine.replaceAll("^\\*\\*", "")
                     .replaceAll("\\*\\*$", "")
                     .replaceAll("^\\[", "")
                     .replaceAll("\\]$", "")
@@ -346,9 +355,11 @@ public class LocalCodeReviewer {
 
             // Extract STATUS field which may be inline (STATUS: FAILED) or on its own line
             // This is critical for detecting failed checks so GitHub comments can be posted
-            String status = extractSingleLineField(trimmed, "STATUS")
+                if ("PASSED".equals(status)) {
+                status = extractSingleLineField(trimmed, "STATUS")
                     .map(value -> value.replaceAll("\\[|\\]", "").trim().toUpperCase())
                     .orElse("PASSED");
+                }
             
             // Extract file path, line number, problem description, and suggested fix
             // Using field extraction methods that handle multi-line content
