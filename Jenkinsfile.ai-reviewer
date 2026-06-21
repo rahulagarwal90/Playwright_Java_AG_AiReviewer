@@ -15,7 +15,7 @@ pipeline {
         GITHUB_REPOSITORY = "rahulagarwal90/Playwright_Java_AG_AiReviewer"
         GITHUB_PR_NUMBER  = "${env.CHANGE_ID}"
         // Name of the regression pipeline job to trigger after PR AI review runs.
-        REGRESSION_JOB_NAME = 'wright-playwright-regression'
+        REGRESSION_JOB_NAME = 'playwright-regression-suite'
     }
 
     stages {
