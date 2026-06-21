@@ -364,7 +364,9 @@ public class LocalCodeReviewer {
             // Extract file path, line number, problem description, and suggested fix
             // Using field extraction methods that handle multi-line content
             String file = extractSingleLineField(trimmed, "File").orElse("");
-            String lineValue = extractSingleLineField(trimmed, "Line").orElse("0");
+            String lineValue = extractSingleLineField(trimmed, "Line")
+                    .or(() -> extractSingleLineField(trimmed, "Lines"))
+                    .orElse("0");
             int lineNumber = 0;
             try {
                 // Handle line ranges (e.g., "41, 42" or "350-360") by taking the first number
@@ -431,8 +433,31 @@ public class LocalCodeReviewer {
         String apiBase = getGitHubApiBase();
         String commitSha = getGitCommitSha();
 
+        int postedCount = 0;
+        int failedCount = 0;
+
         for (ReviewFinding finding : findings) {
-            createGitHubPullRequestComment(repo, prNumber, apiBase, commitSha, finding);
+            if (finding.line <= 0 || finding.file == null || finding.file.isBlank()) {
+                LOGGER.warning(() -> "Skipping invalid review finding for GitHub comment: file="
+                        + finding.file + ", line=" + finding.line + ", category=" + finding.category);
+                failedCount++;
+                continue;
+            }
+
+            try {
+                createGitHubPullRequestComment(repo, prNumber, apiBase, commitSha, finding);
+                postedCount++;
+            } catch (Exception ex) {
+                LOGGER.warning(() -> "Failed to post GitHub comment for file="
+                        + finding.file + ", line=" + finding.line + ": " + ex.getMessage());
+                failedCount++;
+            }
+        }
+
+        LOGGER.info("GitHub inline comments posting summary: posted=" + postedCount + ", failed=" + failedCount);
+
+        if (postedCount == 0 && !findings.isEmpty()) {
+            throw new RuntimeException("Failed to post any GitHub inline comments for FAILED findings.");
         }
     }
 

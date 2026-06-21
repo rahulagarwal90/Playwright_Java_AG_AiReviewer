@@ -14,6 +14,8 @@ pipeline {
         // Jenkins Multibranch Pipelines automatically inject CHANGE_ID, CHANGE_URL, and CHANGE_AUTHOR.
         GITHUB_REPOSITORY = "rahulagarwal90/Playwright_Java_AG_AiReviewer"
         GITHUB_PR_NUMBER  = "${env.CHANGE_ID}"
+        // Name of the regression pipeline job to trigger after PR AI review runs.
+        REGRESSION_JOB_NAME = 'playwright-regression-suite'
     }
 
     stages {
@@ -53,6 +55,27 @@ pipeline {
     }
 
     post {
+        always {
+            script {
+                if (env.CHANGE_ID?.trim()) {
+                    echo "[INFO] Triggering regression pipeline '${env.REGRESSION_JOB_NAME}' for PR #${env.CHANGE_ID}."
+                    try {
+                        build job: env.REGRESSION_JOB_NAME,
+                              wait: false,
+                              propagate: false,
+                              parameters: [
+                                  string(name: 'BROWSER', value: 'chrome'),
+                                  string(name: 'TAGS', value: ''),
+                                  string(name: 'WORKERS', value: '2')
+                              ]
+                    } catch (Exception ex) {
+                        echo "[WARN] Could not trigger regression pipeline '${env.REGRESSION_JOB_NAME}': ${ex.message}"
+                    }
+                } else {
+                    echo "[INFO] Not a PR context; skipping regression pipeline trigger."
+                }
+            }
+        }
         success {
             echo "[INFO] AI Code Quality Gate passed successfully. Pull Request meets standards."
         }
