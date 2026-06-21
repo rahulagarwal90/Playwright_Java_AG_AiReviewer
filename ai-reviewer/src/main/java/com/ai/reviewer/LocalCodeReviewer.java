@@ -301,46 +301,72 @@ public class LocalCodeReviewer {
         return annotated.toString();
     }
 
-    private static List<ReviewFinding> parseReviewFindings(String reviewText) {
+    /**
+     * Parses the AI review feedback text into structured ReviewFinding objects.
+     * 
+     * This parser handles variable AI output formats:
+     * - Categories with or without **bold** or [brackets]
+     * - STATUS field that may appear inline (STATUS: FAILED) or on separate lines
+     * - Multi-line fields (Problem, AI Suggested Fix can span multiple lines)
+     * - File paths, line numbers, problem descriptions, and fixes
+     * 
+     * CRITICAL: GitHub PR inline comments require STATUS: FAILED to be detected so the
+     * reviewer can post comments. This parser splits blocks by blank lines and extracts
+     * each field robustly using regex patterns that work with different AI output layouts.
+     * 
+     * @param reviewText The raw feedback text from Ollama AI model
+     * @return List of ReviewFinding objects with category, status, file, line, problem, and fix
+     */
+    static List<ReviewFinding> parseReviewFindings(String reviewText) {
         List<ReviewFinding> findings = new ArrayList<>();
         if (reviewText == null || reviewText.isBlank()) {
             return findings;
         }
 
-        String normalizedText = reviewText.replaceAll("(?m)^\\s*[-*]+\\s*", "");
-        Pattern blockPattern = Pattern.compile(
-                "(?ms)^[ \t]*([A-Za-z0-9 _\\[\\]-]+?):?\\s*(?:STATUS:\\s*\\[(FAILED|PASSED)\\])?\\s*(.*?)(?=^[ \\\t]*[A-Za-z0-9 _\\[\\]-]+?:?\\s*(?:STATUS:|$)|\\z)",
-                Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+        // Normalize line endings and split blocks by blank lines (each block = one category's review)
+        String normalized = reviewText.replace("\r\n", "\n").replace("\r", "\n");
+        String[] blocks = normalized.split("\\n\\s*\\n+");
 
-        Matcher blockMatcher = blockPattern.matcher(normalizedText);
-        while (blockMatcher.find()) {
-            String category = Optional.ofNullable(blockMatcher.group(1)).orElse("Unknown").trim();
-            String status = Optional.ofNullable(blockMatcher.group(2)).orElse("").trim();
-            String body = Optional.ofNullable(blockMatcher.group(3)).orElse("");
-
-            if (status.isBlank()) {
-                Matcher statusMatcher = Pattern.compile("STATUS:\\s*\\[(FAILED|PASSED)\\]", Pattern.CASE_INSENSITIVE).matcher(body);
-                if (statusMatcher.find()) {
-                    status = statusMatcher.group(1).toUpperCase();
-                } else {
-                    status = "PASSED";
-                }
+        for (String block : blocks) {
+            String trimmed = block.trim();
+            if (trimmed.isEmpty()) {
+                continue;
             }
 
-            String file = extractSingleLineField(body, "File").orElse("");
-            String lineValue = extractSingleLineField(body, "Line").orElse("0");
+            // Extract category name from first line, removing decorations like **Category**: 
+            // This handles formats like "**Playwright Web Assertions:**" or "[Category]:"
+            String[] lines = trimmed.split("\\n");
+            String categoryLine = lines[0].trim();
+            String category = categoryLine.replaceAll("^\\*\\*", "")
+                    .replaceAll("\\*\\*$", "")
+                    .replaceAll("^\\[", "")
+                    .replaceAll("\\]$", "")
+                    .replaceAll(":$", "")
+                    .trim();
+
+            // Extract STATUS field which may be inline (STATUS: FAILED) or on its own line
+            // This is critical for detecting failed checks so GitHub comments can be posted
+            String status = extractSingleLineField(trimmed, "STATUS")
+                    .map(value -> value.replaceAll("\\[|\\]", "").trim().toUpperCase())
+                    .orElse("PASSED");
+            
+            // Extract file path, line number, problem description, and suggested fix
+            // Using field extraction methods that handle multi-line content
+            String file = extractSingleLineField(trimmed, "File").orElse("");
+            String lineValue = extractSingleLineField(trimmed, "Line").orElse("0");
             int lineNumber = 0;
             try {
+                // Handle line ranges (e.g., "41, 42" or "350-360") by taking the first number
                 String firstLineToken = lineValue.split("[,\\s-]+")[0].trim();
                 lineNumber = Integer.parseInt(firstLineToken);
             } catch (Exception ignored) {
                 lineNumber = 0;
             }
-            String problem = extractFieldBody(body, "Problem").orElse("");
-            String suggestedFix = extractFieldBody(body, "AI Suggested Fix").orElse("");
+            String problem = extractFieldBody(trimmed, "Problem").orElse("");
+            String suggestedFix = extractFieldBody(trimmed, "AI Suggested Fix").orElse("");
 
             ReviewFinding finding = new ReviewFinding();
-            finding.category = category.replace("*", "").replace("[", "").replace("]", "").trim();
+            finding.category = category.replaceAll("\\*|\\[|\\]", "").trim();
             finding.status = status.isBlank() ? "PASSED" : status;
             finding.file = file.trim();
             finding.line = lineNumber;
@@ -352,6 +378,14 @@ public class LocalCodeReviewer {
         return findings;
     }
 
+    /**
+     * Extracts a single-line field value from review text.
+     * Example: "STATUS: FAILED" → returns "FAILED"
+     * 
+     * @param text The review block text to search
+     * @param fieldName The field name (e.g., "STATUS", "Line", "File")
+     * @return Optional containing the field value, or empty if not found
+     */
     private static Optional<String> extractSingleLineField(String text, String fieldName) {
         Pattern fieldPattern = Pattern.compile("(?im)^\\s*" + Pattern.quote(fieldName) + ":\\s*(.*)$");
         Matcher matcher = fieldPattern.matcher(text);
@@ -361,7 +395,16 @@ public class LocalCodeReviewer {
         return Optional.empty();
     }
 
-    private static Optional<String> extractFieldBody(String text, String fieldName) {
+    /**
+     * Extracts a potentially multi-line field value from review text.
+     * Example: "Problem: ... content ...\nAI Suggested Fix: ..." → returns multi-line content before next field
+     * 
+     * Used for fields like "Problem" and "AI Suggested Fix" which may span multiple lines.
+     * 
+     * @param text The review block text to search
+     * @param fieldName The field name (e.g., "Problem", "AI Suggested Fix")
+     * @return Optional containing the field value including all lines until the next field, or empty if not found
+     */
         Pattern fieldPattern = Pattern.compile("(?ims)" + Pattern.quote(fieldName) + ":\\s*(.*?)(?=^\\s*[A-Za-z0-9 _\\[\\]-]+?:\\s*|\\z)");
         Matcher matcher = fieldPattern.matcher(text);
         if (matcher.find()) {
@@ -381,6 +424,24 @@ public class LocalCodeReviewer {
         }
     }
 
+    /**
+     * Posts a single AI review finding as an inline comment on a GitHub PR.
+     * 
+     * GitHub PR comment API requires:
+     * - commit_id: the commit SHA where the comment should appear
+     * - path: the file path relative to repo root
+     * - line: the line number in the file (on the RIGHT/new side of the diff)
+     * - body: the comment text
+     * 
+     * Uses java.util.logging for debug output so it doesn't interfere with production logs.
+     * 
+     * @param repo Repository in format "owner/repo"
+     * @param prNumber The PR number
+     * @param apiBase GitHub API base URL (usually https://api.github.com)
+     * @param commitSha The commit SHA for this PR
+     * @param finding The ReviewFinding containing file, line, problem, and fix
+     * @throws Exception If GitHub API returns a non-2xx status code
+     */
     private void createGitHubPullRequestComment(String repo,
                                                 String prNumber,
                                                 String apiBase,
@@ -393,7 +454,10 @@ public class LocalCodeReviewer {
         payload.addProperty("side", "RIGHT");
         payload.addProperty("commit_id", commitSha);
         String jsonBody = new Gson().toJson(payload);
+        
+        // Log debug info before posting (useful for troubleshooting missing GitHub comments)
         LOGGER.fine(() -> "Posting PR comment to: " + repo + " PR:" + prNumber + " file:" + finding.file + " line:" + finding.line);
+        
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(String.format("%s/repos/%s/pulls/%s/comments", apiBase, repo, prNumber)))
                 .header("Accept", "application/vnd.github.v3+json")
@@ -403,7 +467,10 @@ public class LocalCodeReviewer {
                 .build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        
+        // Log GitHub API response for debugging (status code and response body help identify why comments failed)
         LOGGER.fine(() -> "GitHub response: " + response.statusCode() + " body: " + response.body());
+        
         if (response.statusCode() < 200 || response.statusCode() > 299) {
             throw new RuntimeException("GitHub PR comment creation failed: " + response.statusCode() + " " + response.body());
         }
@@ -416,7 +483,13 @@ public class LocalCodeReviewer {
                 finding.suggestedFix);
     }
 
-    private static class ReviewFinding {
+    /**
+     * Represents a single AI code review finding with category, status, file, line, problem, and suggested fix.
+     * 
+     * Package-visible (not private) to allow unit testing of the parser. Each finding becomes a GitHub PR inline comment
+     * if status is FAILED.
+     */
+    static class ReviewFinding {
         String category;
         String status;
         String file;
