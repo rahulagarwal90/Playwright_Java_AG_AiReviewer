@@ -36,7 +36,7 @@ Why it matters:
 Impact:
 * Long source files, big diffs, or verbose prompts can cause the model to lose earlier context.
 * If the model forgets critical instructions, results become less accurate.
-* **Active Framework Optimization:** Our framework explicitly overrides Ollama's default 4k threshold by configuring a `16,384` token window (`num_ctx`) directly inside the Java JSON parameters to prevent truncation bugs.
+* **Active Framework Optimization:** Our framework requests a `16,384` token window (`num_ctx`) in the Java JSON request, but the actual supported context size depends on the model and the Ollama runtime.
 
 ### Context Window Management
 * In Ollama, the context window size is determined by the model architecture and cannot be directly changed for a specific model.
@@ -110,17 +110,17 @@ ollama list
 
 ### Show details for a specific model
 ```bash
-ollama show qwen2.5-coder:7b
+ollama show qwen2.5-coder:14b
 ```
 
 ### Pull / download a model
 ```bash
-ollama pull qwen2.5-coder:7b
+ollama pull qwen2.5-coder:14b
 ```
 
 ### Run a specific model version
 ```bash
-ollama run qwen2.5-coder:7b
+ollama run qwen2.5-coder:14b
 ```
 
 Run a version-specific model directly:
@@ -130,13 +130,17 @@ ollama run qwen3-coder:14b
 
 Run with a prompt:
 ```bash
-ollama run qwen2.5-coder:7b --prompt "Review this Java method for Playwright best practices."
+ollama run qwen2.5-coder:14b --prompt "Review this Java method for Playwright best practices."
 ```
 
-### Start the Ollama service
+If you need a lower-memory alternative, use `qwen2.5-coder:7b` instead.
+
+### Start the Ollama HTTP service
 ```bash
 ollama serve
 ```
+
+When using the `ai-reviewer`, the code sends requests to the Ollama HTTP API at `http://localhost:11434/v1/chat/completions`.
 
 This starts the Ollama background service and makes it available for CLI or API use.
 
@@ -147,14 +151,14 @@ ollama ps
 
 ### Stop a running model
 ```bash
-ollama stop qwen2.5-coder:7b
+ollama stop qwen2.5-coder:14b
 ```
 
 If you have multiple models running, use `ollama ps` first, then stop each model.
 
 ### Delete a model
 ```bash
-ollama rm qwen2.5-coder:7b
+ollama rm qwen2.5-coder:14b
 ```
 
 Remove all local models safely by listing and deleting them:
@@ -166,7 +170,7 @@ ollama list | awk 'NR>1 {print $1}' | xargs -I{} ollama rm {}
 
 ### Copy or rename a model
 ```bash
-ollama cp qwen2.5-coder:7b qwen2.5-coder-copy:7b
+ollama cp qwen2.5-coder:14b qwen2.5-coder-copy:14b
 ```
 
 ## 5. Recommended Models and Limitations
@@ -255,8 +259,8 @@ If the `ollama` CLI is not found, make sure `/Applications/Ollama.app` is instal
 ## 9. Quick Start Checklist
 
 1. Install Ollama on macOS.
-2. Pull a model: `ollama pull qwen2.5-coder:7b`.
-3. Run the model: `ollama run qwen2.5-coder:7b`.
+2. Pull a model: `ollama pull qwen2.5-coder:14b`.
+3. Run the model: `ollama run qwen2.5-coder:14b`.
 4. Inspect models: `ollama list` and `ollama show <model>`.
 5. Stop or delete when finished: `ollama stop <model>` or `ollama rm <model>`.
 

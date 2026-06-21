@@ -19,9 +19,15 @@ To set up this framework on your local system:
   - Verify: `mvn -version`
 - **Ollama (for local AI Reviewer)**:
   - Download and install [Ollama for Mac](https://ollama.com/download/mac).
-  - Pull and launch the qwen2.5-coder model in your terminal:
+  - Pull and launch the reviewer model in your terminal:
     ```bash
-    ollama run qwen2.5-coder:7b
+    ollama pull qwen2.5-coder:14b
+    ollama run qwen2.5-coder:14b
+    ```
+  - If you need a lower-memory alternative, use `qwen2.5-coder:7b` instead.
+  - If the reviewer cannot connect, start the Ollama HTTP service with:
+    ```bash
+    ollama serve
     ```
 - **Playwright Browsers**:
   - Automatically downloaded during the first test run execution.
@@ -50,6 +56,10 @@ mvn clean test -pl playwright-tests -D"cucumber.filter.tags=@SauceDemo"
 
 ### Viewing The Reports
 
+- **Clear old Allure data before each run**:
+  ```bash
+  rm -rf playwright-tests/target/allure-results playwright-tests/target/screenshots playwright-tests/target/traces playwright-tests/target/videos
+  ```
 - **Allure Report (Generate & Open)**:
   ```bash
   mvn allure:serve -pl playwright-tests
@@ -68,7 +78,7 @@ mvn clean test -pl playwright-tests -D"cucumber.filter.tags=@SauceDemo"
 
 ## 3. Running the Automated Local AI Code Reviewer (`ai-reviewer`)
 
-The AI Reviewer isolates your latest staged/unstaged changes using `git diff HEAD`, strips out file rename noise, and runs a diagnostic code review using local LLM `qwen2.5-coder:7b`.
+The AI Reviewer isolates your latest staged/unstaged changes using `git diff HEAD`, strips out file rename noise, and runs a diagnostic code review using local LLM `qwen2.5-coder:14b`.
 
 To compile and trigger the code reviewer:
 ```bash
@@ -80,6 +90,11 @@ mvn -pl ai-reviewer exec:java -Dexec.mainClass="com.ai.reviewer.LocalCodeReviewe
 ```
 
 *Note: Make sure you have edited or staged changes in git, otherwise the engine will report `No git changes detected.`*
+
+### Demo reviewer test block
+This repository includes a hidden test fixture in `playwright-tests/src/test/java/com/framework/steps/DemoQaSteps.java` that you can use as a live AI review demo. The block is currently wrapped in `if (false)` so it does not execute during normal test runs, but the source remains available for showing the reviewer or temporarily enabling it.
+
+The reviewer also contains a regression test in `ai-reviewer/src/test/java/com/ai/reviewer/LocalCodeReviewerTest.java` that verifies the line-number annotation helper used to map Git diff hunks to actual file line numbers.
 
 ---
 
