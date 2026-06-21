@@ -405,6 +405,7 @@ public class LocalCodeReviewer {
      * @param fieldName The field name (e.g., "Problem", "AI Suggested Fix")
      * @return Optional containing the field value including all lines until the next field, or empty if not found
      */
+    private static Optional<String> extractFieldBody(String text, String fieldName) {
         Pattern fieldPattern = Pattern.compile("(?ims)" + Pattern.quote(fieldName) + ":\\s*(.*?)(?=^\\s*[A-Za-z0-9 _\\[\\]-]+?:\\s*|\\z)");
         Matcher matcher = fieldPattern.matcher(text);
         if (matcher.find()) {
