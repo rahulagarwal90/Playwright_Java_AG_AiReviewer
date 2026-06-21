@@ -34,6 +34,10 @@ public interface FrameworkConfig extends Config {
     @Key("browser.headless")
     @DefaultValue("false")
     boolean browserHeadless();
+
+    @Key("browser.recordvideo")
+    @DefaultValue("true")
+    boolean browserRecordVideo();
     
     @Key("demoqa.text.box.path")
     String demoqaTextBoxPath();

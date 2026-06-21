@@ -31,8 +31,14 @@ public class PlaywrightFactory {
         BrowserType.LaunchOptions options = new BrowserType.LaunchOptions().setHeadless(headless);
         tlBrowser.set(tlPlaywright.get().chromium().launch(options));
         
-        tlContext.set(tlBrowser.get().newContext(new Browser.NewContextOptions()
-                .setRecordVideoDir(Paths.get("target/videos/"))));
+        Browser.NewContextOptions contextOptions = new Browser.NewContextOptions();
+        if (config.browserRecordVideo()) {
+            contextOptions.setRecordVideoDir(Paths.get("target/videos/"));
+            logger.info("Playwright video recording enabled: target/videos/");
+        } else {
+            logger.info("Playwright video recording disabled via configuration.");
+        }
+        tlContext.set(tlBrowser.get().newContext(contextOptions));
         
         tlPage.set(tlContext.get().newPage());
         logger.info("Browser/Page session initialized.");

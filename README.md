@@ -31,6 +31,8 @@ To set up this framework on your local system:
     ```
 - **Playwright Browsers**:
   - Automatically downloaded during the first test run execution.
+- **Browser video recording**:
+  - Controlled with `browser.recordvideo=true|false` in `playwright-tests/src/test/resources/config.properties` or via `-Dbrowser.recordvideo=false`.
 - **IDE Recommendations**:
   - **VS Code**: Install `Extension Pack for Java` and `Cucumber (Gherkin)` extensions.
   - **IntelliJ IDEA**: Install the `Cucumber for Java` plugin.
