@@ -38,13 +38,4 @@ public interface FrameworkConfig extends Config {
     @Key("browser.recordvideo")
     @DefaultValue("true")
     boolean browserRecordVideo();
-    
-    @Key("demoqa.text.box.path")
-    String demoqaTextBoxPath();
-    
-    @Key("demoqa.webtables.path")
-    String demoqaWebtablesPath();
-    
-    @Key("demoqa.select.menu.path")
-    String demoqaSelectMenuPath();
 }

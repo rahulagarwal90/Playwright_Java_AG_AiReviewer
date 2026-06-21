@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -107,6 +106,10 @@ public class LocalCodeReviewer {
         return getLocalGitDiff();
     }
 
+    /**
+     * Reads local working tree changes via git diff against HEAD.
+     * Includes staged and unstaged changes while excluding this reviewer class.
+     */
     private String getLocalGitDiff() throws Exception {
         // Natively targets both unstaged and staged changes in a single raw stream
         ProcessBuilder pb = new ProcessBuilder("git", "diff", "HEAD", "--", ".", ":!**/LocalCodeReviewer.java");
@@ -119,6 +122,9 @@ public class LocalCodeReviewer {
         return diffText;
     }
 
+    /**
+     * Fetches pull request diff content directly from GitHub when running in CI PR context.
+     */
     private String getPullRequestDiffFromGitHub() throws Exception {
         String repo = getGitHubRepository();
         String prNumber = getGitHubPullRequestNumber();
@@ -139,6 +145,9 @@ public class LocalCodeReviewer {
         return response.body();
     }
 
+    /**
+     * Determines whether all required GitHub PR environment context is present.
+     */
     private boolean isGitHubContext() {
         return Optional.ofNullable(System.getenv("GITHUB_REPOSITORY")).filter(s -> !s.isBlank()).isPresent()
                 && (Optional.ofNullable(System.getenv("GITHUB_PR_NUMBER")).filter(s -> !s.isBlank()).isPresent()
@@ -146,6 +155,9 @@ public class LocalCodeReviewer {
                 && Optional.ofNullable(System.getenv("GITHUB_TOKEN")).filter(s -> !s.isBlank()).isPresent();
     }
 
+    /**
+     * Resolves repository identifier in owner/repo format from environment or Jenkins CHANGE_URL.
+     */
     private String getGitHubRepository() {
         String repository = System.getenv("GITHUB_REPOSITORY");
         if (repository != null && !repository.isBlank()) {
@@ -172,6 +184,9 @@ public class LocalCodeReviewer {
         throw new IllegalStateException("Missing required GitHub repository context: GITHUB_REPOSITORY or CHANGE_URL");
     }
 
+    /**
+     * Resolves pull request number from explicit env var or Jenkins CHANGE_ID fallback.
+     */
     private String getGitHubPullRequestNumber() {
         String prNumber = System.getenv("GITHUB_PR_NUMBER");
         if (prNumber != null && !prNumber.isBlank()) {
@@ -184,6 +199,9 @@ public class LocalCodeReviewer {
         throw new IllegalStateException("Missing required GitHub PR number context: GITHUB_PR_NUMBER or CHANGE_ID");
     }
 
+    /**
+     * Returns GitHub token used for PR API calls.
+     */
     private String getGitHubToken() {
         String token = System.getenv("GITHUB_TOKEN");
         if (token == null || token.isBlank()) {
@@ -192,10 +210,16 @@ public class LocalCodeReviewer {
         return token;
     }
 
+    /**
+     * Resolves GitHub API base URL with a sensible default for github.com.
+     */
     private String getGitHubApiBase() {
         return Optional.ofNullable(System.getenv("GITHUB_API_URL")).filter(s -> !s.isBlank()).orElse("https://api.github.com");
     }
 
+    /**
+     * Resolves commit SHA for comment anchoring, preferring Jenkins GIT_COMMIT.
+     */
     private String getGitCommitSha() throws Exception {
         String gitCommit = System.getenv("GIT_COMMIT");
         if (gitCommit != null && !gitCommit.isBlank()) {
@@ -419,6 +443,9 @@ public class LocalCodeReviewer {
         return Optional.empty();
     }
 
+    /**
+     * Posts all FAILED findings as GitHub inline comments and keeps posting on per-item failures.
+     */
     private void postGitHubReviewComments(List<ReviewFinding> findings) throws Exception {
         String repo = getGitHubRepository();
         String prNumber = getGitHubPullRequestNumber();
@@ -531,10 +558,16 @@ public class LocalCodeReviewer {
         return Optional.empty();
     }
 
+    /**
+     * Normalizes file paths to repository-style separators and strips leading ./.
+     */
     private String normalizePath(String path) {
         return path.replace('\\', '/').replaceFirst("^\\./", "").trim();
     }
 
+    /**
+     * Extracts filename component from a path.
+     */
     private String fileNamePart(String path) {
         int slashIndex = path.lastIndexOf('/');
         return slashIndex >= 0 ? path.substring(slashIndex + 1) : path;
@@ -688,7 +721,7 @@ public class LocalCodeReviewer {
                     if (throwable != null) {
                         System.err.println("\n[ERROR] Failed to connect to local Ollama service.");
                         System.err.println(
-                                "[HELP] Please ensure Ollama is installed and running via: ollama run qwen2.5-coder:7b");
+                                "[HELP] Please ensure Ollama is installed and running via: ollama run qwen2.5-coder:14b");
                         System.err.println("[HELP] Ensure the Ollama port is accessible at: http://localhost:11434");
                         throw new RuntimeException("Ollama connection failed", throwable);
                     }
