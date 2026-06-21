@@ -117,3 +117,103 @@ mvn -pl playwright-tests test
 ```
 
 This bypasses the `ai-reviewer` execution and ensures CI/CD builds pass successfully in environments without a local model server.
+
+---
+
+## 5. Jenkins CI — Setup & Running the AI Code Quality Gate
+
+This repository includes a ready `Jenkinsfile` that implements the AI Code Quality Gate using `mvn -pl ai-reviewer exec:java -Dexec.mainClass="com.ai.reviewer.LocalCodeReviewer"`.
+
+Follow these steps to install, configure, and run Jenkins for the PR gate.
+
+1) Start Jenkins (recommended: Docker)
+
+```bash
+# Recommended: run Jenkins in Docker (isolated, repeatable)
+docker run --name jenkins -p 8080:8080 -p 50000:50000 \
+  -v jenkins_home:/var/jenkins_home \
+  -d jenkins/jenkins:lts
+
+# View logs and get initial admin password
+docker logs -f jenkins
+docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+```
+
+Alternative installation options are Homebrew or the standalone WAR; use whichever works for your environment. See the earlier section for quick commands.
+
+2) Install recommended Jenkins plugins
+
+- GitHub Branch Source (for multibranch and PR detection)
+- Pipeline (Declarative Pipeline support)
+- Credentials (store tokens)
+- GitHub (optional: for webhooks and status reporting)
+- Allure (optional: reporting)
+
+3) Configure Jenkins credentials
+
+- Create a **Secret Text** credential containing a GitHub personal access token that has `repo:status`, `repo:pull_request`, and `pull_request_review` (or equivalent) permissions.
+- Use the credential ID `github-pr-token` (or update the `Jenkinsfile` to the ID you choose).
+
+4) Configure the repository in Jenkins
+
+- Create a new Multibranch Pipeline job and point it at your GitHub repository. Jenkins will detect the `Jenkinsfile` in the repository root and create PR-based branches automatically.
+- Ensure webhooks are registered on the GitHub repository for Pull Request opened/updated events. Alternatively, use the GitHub Branch Source plugin to manage webhooks.
+
+5) The `Jenkinsfile` in this repo does the following:
+
+- Checks out the PR branch
+- Verifies Ollama HTTP service is reachable at `http://localhost:11434` on the agent
+- Compiles the `ai-reviewer` module
+- Runs the reviewer with `mvn -pl ai-reviewer exec:java -Dexec.mainClass="com.ai.reviewer.LocalCodeReviewer"`
+- Exits with non-zero status if the reviewer detects any `[FAILED]` findings, causing Jenkins to mark the build as failed and GitHub status to be failing (blocking merge)
+
+6) Example: run the reviewer locally (useful for testing the gate before Jenkins)
+
+```bash
+# From repository root
+mvn -pl ai-reviewer -DskipTests compile
+mvn -pl ai-reviewer exec:java -Dexec.mainClass="com.ai.reviewer.LocalCodeReviewer"
+```
+
+7) Best practices and troubleshooting
+
+- Jenkins agent must be able to reach the Ollama HTTP service. If Jenkins agents run in containers, either run Ollama inside the same network or use an accessible host URL.
+- Ensure `GITHUB_REPOSITORY`, `CHANGE_ID` (PR number) and `GITHUB_TOKEN` (credential) are available in the agent environment; GitHub Branch Source plugin exposes these automatically for multibranch PR runs.
+- If your Jenkins setup does not expose `GITHUB_*` env vars, update the `Jenkinsfile` to pass the repository and PR number as pipeline parameters to the run stage.
+- Admins can still bypass the GitHub status check manually in GitHub if necessary (human override rule).
+
+8) Security notes
+
+- Keep the GitHub token in Jenkins credentials only (do not commit tokens). Use the credential ID in the `Jenkinsfile` environment mapping.
+- Review and limit token scopes to the minimum required. Rotate tokens periodically.
+
+
+## 🌐 Local Webhook Tunnel Setup (GitHub to Local Jenkins)
+
+Since Jenkins runs locally (`http://localhost:8080`), external GitHub servers cannot reach it directly. Use `ngrok` to expose a secure tunnel so GitHub can trigger your AI Code Quality Gate on every Pull Request event.
+
+### 1. Prerequisites & ngrok Installation
+If you haven't installed ngrok yet on your macOS machine, use Homebrew:
+```bash
+brew install ngrok
+
+Before running the tunnel, add your free personal authentication token to your machine's configuration:
+
+ngrok config add-authtoken <your-personal-token>
+
+Your configuration is safely saved at: /Users/rahul/Library/Application Support/ngrok/ngrok.yml
+3. Launch the Secure Tunnel
+Expose your local Jenkins port (8080) to the public internet:
+ngrok http 8080
+
+Keep this terminal session running. Note your public forwarding address, for example:
+https://transpire-removal-unable.ngrok-free.dev
+
+4. Configure the GitHub Webhook
+	1.	Go to your repository on GitHub -> Settings -> Webhooks -> Add webhook.
+	2.	Payload URL: Paste your unique forwarding URL and append /github-webhook/ explicitly to the end:
+https://transpire-removal-unable.ngrok-free.dev/github-webhook/
+	3.	Content type: Change from form-data to application/json.
+	4.	Secret: Leave blank.
+	5.	Trigger events: Select Let me select individual events -> check Pull requests (uncheck Pushes if isolating strictly to PR gates).
+	6.	Click Add Webhook and refresh the page to verify a green checkmark appears.
