@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
  */
 public class LocalCodeReviewer {
 
+    private static final Logger LOGGER = Logger.getLogger(LocalCodeReviewer.class.getName());
     private final HttpClient httpClient;
 
     public LocalCodeReviewer() {
@@ -41,9 +43,14 @@ public class LocalCodeReviewer {
      * Runs the reviewer and waits for the review task to complete.
      */
         private static final Pattern REVIEW_FINDING_PATTERN = Pattern.compile(
-            "(?:\\*\\*|\\[)?(.*?)(?:\\*\\*|\\])?: STATUS: \\[" +
-                "(FAILED|PASSED)\\]\\s*File:\\s*(.*?)\\s*Line:\\s*(\\d+)\\s*Problem:\\s*(.*?)\\s*AI Suggested Fix:\\s*(.*?)(?=\\n(?:(?:\\*\\*|\\[)?.*?STATUS: \\[[A-Z]+\\]|\\z))",
-            Pattern.DOTALL);
+            "(?:\\*\\*|\\[)?([A-Za-z0-9\\s&/\\-_\\(\\)]+?)(?:\\*\\*|\\])?" +
+            "(?::\\s*STATUS:\\s*\\[((?:FAILED|PASSED))\\]|:)?\\s*" +
+            "(?:\\n|\\r\\n)\\s*(?:-|\\*)*\\s*File:\\s*(.*?)\\s*" +
+            "(?:\\n|\\r\\n)\\s*(?:-|\\*)*\\s*Lines?:\\s*([\\d,\\s-]+)\\s*" +
+            "(?:\\n|\\r\\n)\\s*(?:-|\\*)*\\s*Problem:\\s*(.*?)\\s*" +
+            "(?:\\n|\\r\\n)\\s*(?:-|\\*)*\\s*(?:AI\\s*)?Suggested\\s*Fix:\\s*(.*?)" +
+            "(?=\\n(?:(?:\\*\\*|\\[)?[A-Za-z0-9\\s&/\\-_\\(\\)]+(?:\\*\\*|\\])?:|\\z))",
+            Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
     public static void main(String[] args) {
         LocalCodeReviewer reviewer = new LocalCodeReviewer();
@@ -154,9 +161,20 @@ public class LocalCodeReviewer {
         }
         String changeUrl = System.getenv("CHANGE_URL");
         if (changeUrl != null && !changeUrl.isBlank()) {
-            String[] parts = changeUrl.split("/");
-            if (parts.length >= 2) {
-                return parts[parts.length - 2] + "/" + parts[parts.length - 1];
+            try {
+                URI uri = URI.create(changeUrl);
+                String path = uri.getPath(); // e.g. /owner/repo/pull/123
+                String[] segments = path.split("/");
+                List<String> cleaned = new ArrayList<>();
+                for (String s : segments) {
+                    if (s != null && !s.isBlank()) cleaned.add(s);
+                }
+                if (cleaned.size() >= 2) {
+                    // owner = cleaned[0], repo = cleaned[1]
+                    return cleaned.get(0) + "/" + cleaned.get(1);
+                }
+            } catch (Exception e) {
+                // fall through to error below
             }
         }
         throw new IllegalStateException("Missing required GitHub repository context: GITHUB_REPOSITORY or CHANGE_URL");
@@ -285,18 +303,71 @@ public class LocalCodeReviewer {
 
     private static List<ReviewFinding> parseReviewFindings(String reviewText) {
         List<ReviewFinding> findings = new ArrayList<>();
-        Matcher matcher = REVIEW_FINDING_PATTERN.matcher(reviewText + "\n");
-        while (matcher.find()) {
+        if (reviewText == null || reviewText.isBlank()) {
+            return findings;
+        }
+
+        String normalizedText = reviewText.replaceAll("(?m)^\\s*[-*]+\\s*", "");
+        Pattern blockPattern = Pattern.compile(
+                "(?ms)^[ \t]*([A-Za-z0-9 _\\[\\]-]+?):?\\s*(?:STATUS:\\s*\\[(FAILED|PASSED)\\])?\\s*(.*?)(?=^[ \\\t]*[A-Za-z0-9 _\\[\\]-]+?:?\\s*(?:STATUS:|$)|\\z)",
+                Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+
+        Matcher blockMatcher = blockPattern.matcher(normalizedText);
+        while (blockMatcher.find()) {
+            String category = Optional.ofNullable(blockMatcher.group(1)).orElse("Unknown").trim();
+            String status = Optional.ofNullable(blockMatcher.group(2)).orElse("").trim();
+            String body = Optional.ofNullable(blockMatcher.group(3)).orElse("");
+
+            if (status.isBlank()) {
+                Matcher statusMatcher = Pattern.compile("STATUS:\\s*\\[(FAILED|PASSED)\\]", Pattern.CASE_INSENSITIVE).matcher(body);
+                if (statusMatcher.find()) {
+                    status = statusMatcher.group(1).toUpperCase();
+                } else {
+                    status = "PASSED";
+                }
+            }
+
+            String file = extractSingleLineField(body, "File").orElse("");
+            String lineValue = extractSingleLineField(body, "Line").orElse("0");
+            int lineNumber = 0;
+            try {
+                String firstLineToken = lineValue.split("[,\\s-]+")[0].trim();
+                lineNumber = Integer.parseInt(firstLineToken);
+            } catch (Exception ignored) {
+                lineNumber = 0;
+            }
+            String problem = extractFieldBody(body, "Problem").orElse("");
+            String suggestedFix = extractFieldBody(body, "AI Suggested Fix").orElse("");
+
             ReviewFinding finding = new ReviewFinding();
-            finding.category = matcher.group(1).replace("*", "").replace("[", "").replace("]", "").trim();
-            finding.status = matcher.group(2).trim();
-            finding.file = matcher.group(3).trim();
-            finding.line = Integer.parseInt(matcher.group(4).trim());
-            finding.problem = matcher.group(5).trim();
-            finding.suggestedFix = matcher.group(6).trim();
+            finding.category = category.replace("*", "").replace("[", "").replace("]", "").trim();
+            finding.status = status.isBlank() ? "PASSED" : status;
+            finding.file = file.trim();
+            finding.line = lineNumber;
+            finding.problem = problem.trim();
+            finding.suggestedFix = suggestedFix.trim();
             findings.add(finding);
         }
+
         return findings;
+    }
+
+    private static Optional<String> extractSingleLineField(String text, String fieldName) {
+        Pattern fieldPattern = Pattern.compile("(?im)^\\s*" + Pattern.quote(fieldName) + ":\\s*(.*)$");
+        Matcher matcher = fieldPattern.matcher(text);
+        if (matcher.find()) {
+            return Optional.ofNullable(matcher.group(1));
+        }
+        return Optional.empty();
+    }
+
+    private static Optional<String> extractFieldBody(String text, String fieldName) {
+        Pattern fieldPattern = Pattern.compile("(?ims)" + Pattern.quote(fieldName) + ":\\s*(.*?)(?=^\\s*[A-Za-z0-9 _\\[\\]-]+?:\\s*|\\z)");
+        Matcher matcher = fieldPattern.matcher(text);
+        if (matcher.find()) {
+            return Optional.ofNullable(matcher.group(1));
+        }
+        return Optional.empty();
     }
 
     private void postGitHubReviewComments(List<ReviewFinding> findings) throws Exception {
@@ -321,16 +392,18 @@ public class LocalCodeReviewer {
         payload.addProperty("line", finding.line);
         payload.addProperty("side", "RIGHT");
         payload.addProperty("commit_id", commitSha);
-
+        String jsonBody = new Gson().toJson(payload);
+        LOGGER.fine(() -> "Posting PR comment to: " + repo + " PR:" + prNumber + " file:" + finding.file + " line:" + finding.line);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(String.format("%s/repos/%s/pulls/%s/comments", apiBase, repo, prNumber)))
                 .header("Accept", "application/vnd.github.v3+json")
                 .header("Authorization", "Bearer " + getGitHubToken())
                 .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(new Gson().toJson(payload), StandardCharsets.UTF_8))
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8))
                 .build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        LOGGER.fine(() -> "GitHub response: " + response.statusCode() + " body: " + response.body());
         if (response.statusCode() < 200 || response.statusCode() > 299) {
             throw new RuntimeException("GitHub PR comment creation failed: " + response.statusCode() + " " + response.body());
         }
