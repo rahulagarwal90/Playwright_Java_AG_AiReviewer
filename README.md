@@ -2,6 +2,12 @@
 
 A production-grade, multi-module Maven automation repository designed to separate browser automation tests from local, sandboxed offline code review utilities.
 
+## Quick Navigation
+
+- One-time machine setup and dependency installation: [README_INSTALLATION.md](README_INSTALLATION.md)
+- Day-to-day startup, execution, monitoring, and shutdown: [README_IMPLEMENTATION_AND_RUNNING.md](README_IMPLEMENTATION_AND_RUNNING.md)
+- Jenkins-specific setup and operational checks: [docs/jenkins_setup.md](docs/jenkins_setup.md)
+
 ## Module Structure
 
 - **`playwright-tests`**: Core browser automation framework containing Page Objects, step definitions, Cucumber features, configuration resources, and test runners.

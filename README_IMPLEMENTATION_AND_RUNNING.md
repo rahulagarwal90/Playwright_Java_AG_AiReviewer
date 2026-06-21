@@ -1,154 +1,218 @@
-# Framework Execution Guide (`README_IMPLEMENTATION_AND_RUNNING.md`)
+# Daily Operations Runbook
 
-This guide outlines execution guidelines for both local developers and Jenkins pipeline orchestration. It is structured into two main contexts: **Local Runs** and **Pipeline Runs**.
+This document is only for day-to-day execution after setup is complete.
+For one-time installation and Jenkins configuration, use:
 
----
-
-## 💻 1. Local Runs (Manual Execution)
-
-Both modules must be run from the **project root directory** to ensure Maven parses the multi-module reactor system correctly.
+- [README_INSTALLATION.md](README_INSTALLATION.md)
+- [docs/jenkins_setup.md](docs/jenkins_setup.md)
 
 ---
 
-### A. Playwright Browser Automation (`playwright-tests`)
+## 1. Daily Startup Sequence
 
-This module executes automated web suites using Playwright BDD Cucumber.
+Run these in order at the start of your workday.
 
-#### 🍎 macOS (Terminal)
-* **Standard execution** (headless, default `@SauceDemo` tags, 2 workers):
-  ```bash
-  mvn -pl playwright-tests clean test
-  ```
-* **Parametrized execution** (run Chrome headlessly, `@SauceDemo` tags, 4 parallel workers):
-  ```bash
-  mvn -pl playwright-tests clean test -Dbrowser.headless=true -Dbrowser=chrome -Dcucumber.filter.tags="@SauceDemo" -Dworkers=4
-  ```
-* **Install Playwright binaries manually**:
-  ```bash
-  mvn -pl playwright-tests exec:java -e -Dexec.mainClass="com.microsoft.playwright.CLI" -Dexec.args="install --with-deps"
-  ```
+### 1.1 Open terminals at repository root
 
-#### 🪟 Windows (PowerShell)
-* **Standard execution** (headless, default `@SauceDemo` tags, 2 workers):
-  ```powershell
-  mvn -pl playwright-tests clean test
-  ```
-* **Parametrized execution** (run Chrome headlessly, `@SauceDemo` tags, 4 parallel workers):
-  ```powershell
-  mvn -pl playwright-tests clean test "-Dbrowser.headless=true" "-Dbrowser=chrome" "-Dcucumber.filter.tags=@SauceDemo" "-Dworkers=4"
-  ```
-* **Install Playwright binaries manually**:
-  ```powershell
-  mvn -pl playwright-tests exec:java -e -Dexec.mainClass="com.microsoft.playwright.CLI" -Dexec.args="install --with-deps"
-  ```
+```bash
+cd /Users/rahul/Playwright_Java_AG_AiReviewer
+```
 
----
+### 1.2 Start Ollama service
 
-### B. AI Reviewer (`ai-reviewer`)
+```bash
+ollama serve
+```
 
-The AI reviewer extracts local unstaged and staged changes using `git diff HEAD`, annotates them with line numbers, and sends them to your local Ollama instance for validation.
+Optional check in another terminal:
 
-*Note: You must have active staged/unstaged changes in the repository for the diff generator to catch. Otherwise, it logs `No git changes detected.`*
+```bash
+curl -s -I http://localhost:11434
+```
 
-#### 🍎 macOS (Terminal)
-* **Run review engine**:
-  ```bash
-  # Step 1: Compile the project
-  mvn clean compile
-  
-  # Step 2: Trigger the reviewer main class
-  mvn -pl ai-reviewer exec:java -Dexec.mainClass="com.ai.reviewer.LocalCodeReviewer"
-  ```
+### 1.3 Start Jenkins
 
-#### 🪟 Windows (PowerShell)
-* **Run review engine**:
-  ```powershell
-  # Step 1: Compile the project
-  mvn clean compile
-  
-  # Step 2: Trigger the reviewer main class
-  mvn -pl ai-reviewer exec:java "-Dexec.mainClass=com.ai.reviewer.LocalCodeReviewer"
-  ```
+If using Homebrew on macOS:
+
+```bash
+brew services start jenkins-lts
+```
+
+If using Docker:
+
+```bash
+docker start jenkins
+```
+
+Jenkins URL:
+
+```text
+http://localhost:8080
+```
+
+### 1.4 Start ngrok tunnel
+
+```bash
+ngrok http 8080
+```
+
+Confirm webhook forwarding in ngrok dashboard:
+
+```text
+http://localhost:4040
+```
 
 ---
 
-## 🚀 2. Pipeline Runs (Jenkins Execution)
+## 2. Daily Local Commands
 
-To isolate testing pipelines and AI analysis, two separate pipelines are created in Jenkins.
+### 2.1 Run AI reviewer locally
 
-### Pipeline A: The Pull Request AI Reviewer Gate (`Jenkinsfile.ai-reviewer`)
-- **Trigger**: Automatically triggered by GitHub webhook on PR actions (open, update/sync).
-- **Behavior**: Checks out the PR code, checks if local Ollama (`http://localhost:11434`) is running on the host, injects the `github-pr-token` to authenticate with GitHub, runs the reviewer code, and fails the build if flaws are found to block merging. It runs **no browser tests**.
+Use this before pushing when you want a quick local gate check.
 
-### Pipeline B: Scheduled/On-Demand Playwright Regression (`Jenkinsfile.playwright-regression`)
-- **Trigger**: Runs automatically every night at 2:00 AM (`cron('H 02 * * *')`) or manually via the Jenkins UI with parameter selection.
-- **Behavior**: Installs Playwright browser dependencies inside the workspace, executes headless tests, parses Surefire/JUnit reports, and archives media artifacts (traces, screenshots, videos).
+```bash
+mvn clean compile
+mvn -pl ai-reviewer exec:java -Dexec.mainClass="com.ai.reviewer.LocalCodeReviewer"
+```
 
----
+### 2.2 Run Playwright tests locally
 
-### ⚙️ How to Configure Pipelines in Jenkins UI
+Default run:
 
-Follow these steps to create the dual pipeline jobs:
+```bash
+mvn -pl playwright-tests clean test
+```
 
-#### 1. Configure the AI Reviewer PR Gate Job
-1. On the Jenkins Dashboard, click **New Item**.
-2. Name the job: `playwright-framework-ai-reviewer`.
-3. Select **Multibranch Pipeline** and click **OK**.
-4. Under **Branch Sources**, click **Add source** -> **GitHub**.
-5. Select your GitHub credentials, and enter the Repository HTTPS URL:
-   `https://github.com/<your-username>/Playwright_Java_AG_AiReviewer.git`
-6. Under **Build Configuration**, change **Script Path** from `Jenkinsfile` to:
-   `Jenkinsfile.ai-reviewer`
-7. Under **Scan Multibranch Pipeline Triggers**, check **Periodically if not otherwise run** and set the interval to `5 minutes` or `1 minute`.
-8. Click **Save**. Jenkins will scan the branches and automatically start a job if a PR branch is discovered containing `Jenkinsfile.ai-reviewer`.
+Tagged run example:
 
-#### 2. Configure the Playwright Regression Job
-1. On the Jenkins Dashboard, click **New Item**.
-2. Name the job: `playwright-regression-suite`.
-3. Select **Pipeline** (a standard Pipeline job is recommended here for parameterized on-demand runs) and click **OK**.
-4. Scroll to **Build Triggers** and check **Build periodically**. Set the schedule to:
-   ```text
-   H 02 * * *
-   ```
-5. Check **This project is parameterized** and configure three parameters:
-   - **Choice Parameter**:
-     * Name: `BROWSER`
-     * Choices: `chrome`, `firefox`, `webkit`
-     * Description: `Select browser for execution`
-   - **String Parameter**:
-     * Name: `TAGS`
-     * Default Value: *(Leave blank)*
-     * Description: `Enter Cucumber filter tags (e.g., @SauceDemo). Leave empty to execute ALL tests.`
-   - **String Parameter**:
-     * Name: `WORKERS`
-     * Default Value: `2`
-     * Description: `Parallel execution thread count`
-6. Scroll down to **Pipeline** -> **Definition**: Select **Pipeline script from SCM**.
-7. Select **Git** and enter your repository URL:
-   `https://github.com/<your-username>/Playwright_Java_AG_AiReviewer.git`
-8. In **Branch Specifier**, enter `*/main` (or your default branch).
-9. Change the **Script Path** to:
-   `Jenkinsfile.playwright-regression`
-10. Click **Save**.
+```bash
+mvn -pl playwright-tests clean test -Dcucumber.filter.tags="@SauceDemo" -Dworkers=2
+```
+
+Install browsers if needed:
+
+```bash
+mvn -pl playwright-tests exec:java -e -Dexec.mainClass="com.microsoft.playwright.CLI" -Dexec.args="install --with-deps"
+```
 
 ---
 
-### 🔍 How to Monitor Webhooks & View Build Logs
+## 3. Daily PR Workflow
 
-#### Webhook Handshake Verification via ngrok
-1. While `ngrok` is running, open a browser and navigate to its local administrative interface:
-   `http://localhost:4040`
-2. This local dashboard shows all incoming HTTP POST requests forwarded from GitHub to your local Jenkins server (`http://localhost:8080/github-webhook/`).
-3. Click on any `POST /github-webhook/` event to view headers, JSON payloads, and response codes (`200 OK` indicates successful delivery to Jenkins).
-4. If deliveries fail, verify your ngrok forwarding endpoint matches your GitHub Webhook configuration exactly.
+### 3.1 Before creating/updating PR
 
-#### Monitoring Jenkins Build Logs
-1. Open Jenkins in your browser (`http://localhost:8080`).
-2. Navigate to your job:
-   - For PR builds: Click on `playwright-framework-ai-reviewer` -> select the active Pull Request branch -> select the latest build number.
-   - For regression: Click on `playwright-regression-suite` -> select the latest build number.
-3. Click on **Console Output** in the left-hand menu.
-4. Review stdout logs:
-   - In **AI Reviewer** logs, check the section starting with `==================================================` to view model comments and find out if it succeeded or blocked.
-   - In **Playwright Regression** logs, inspect Cucumber test run output and confirm surefire report generation.
-5. For regression runs, click on **Build Artifacts** at the top of the build screen to download archived videos, traces, and screenshots.
+```bash
+git status
+git add .
+git commit -m "<your message>"
+git push
+```
+
+### 3.2 What should trigger automatically
+
+- AI reviewer PR pipeline runs for PR open/update.
+- Regression pipeline is triggered from AI reviewer post-action.
+
+### 3.3 What to check in Jenkins logs
+
+- AI reviewer job should show reviewer output and PR comment posting summary.
+- AI reviewer post-action should log regression trigger line for the job.
+- Regression job should appear in build history as newly scheduled.
+
+---
+
+## 4. Daily Monitoring Checklist
+
+### 4.1 Jenkins
+
+- AI reviewer multibranch job status for current PR
+- Regression job latest build status
+- Console output for failures
+
+### 4.2 GitHub PR
+
+- AI inline comments posted on changed lines
+- Jenkins checks reported on the PR
+
+### 4.3 Artifacts
+
+- Playwright videos, traces, screenshots in Jenkins artifacts
+- Allure report link for regression job
+
+---
+
+## 5. End-of-Day Shutdown
+
+### 5.1 Stop ngrok
+
+Stop the terminal running ngrok with Ctrl+C.
+
+### 5.2 Stop Jenkins
+
+If Homebrew service:
+
+```bash
+brew services stop jenkins-lts
+```
+
+If Docker container:
+
+```bash
+docker stop jenkins
+```
+
+### 5.3 Stop Ollama model(s) and service
+
+List active models:
+
+```bash
+ollama ps
+```
+
+Stop active model:
+
+```bash
+ollama stop qwen2.5-coder:14b
+```
+
+If running ollama serve in terminal, stop it with Ctrl+C.
+
+---
+
+## 6. Quick Troubleshooting (Daily)
+
+### 6.1 AI reviewer says Ollama unreachable
+
+- Ensure `ollama serve` is running.
+- Verify endpoint: `http://localhost:11434`.
+
+### 6.2 PR triggered AI reviewer but not regression
+
+- Confirm PR commit includes latest `Jenkinsfile.ai-reviewer`.
+- Confirm regression job name exists in Jenkins.
+- Check AI reviewer post-action logs for downstream trigger warnings.
+
+### 6.3 No AI comments on PR
+
+- Check AI reviewer console output for GitHub API response codes.
+- Ensure files/lines in findings are resolvable in PR diff.
+
+---
+
+## 7. Daily Commands Reference
+
+```bash
+# Start
+ollama serve
+brew services start jenkins-lts
+ngrok http 8080
+
+# Validate locally
+mvn clean compile
+mvn -pl ai-reviewer exec:java -Dexec.mainClass="com.ai.reviewer.LocalCodeReviewer"
+mvn -pl playwright-tests clean test
+
+# Stop
+brew services stop jenkins-lts
+ollama stop qwen2.5-coder:14b
+```
