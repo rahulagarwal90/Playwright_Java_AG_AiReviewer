@@ -76,15 +76,20 @@ pipeline {
                 // Archive cucumber execution media assets (Videos, Screenshots, Traces) out of playwright-tests target directory
                 archiveArtifacts artifacts: 'playwright-tests/target/videos/**/*, playwright-tests/target/screenshots/**/*, playwright-tests/target/traces/**/*', allowEmptyArchive: true
 
-                // Publish Allure Report (Using the installed Allure Jenkins Plugin)
-                allure includeProperties: false, results: [[path: 'playwright-tests/target/allure-results']]
+                // Publish Allure Report (Using the installed Allure Jenkins Plugin) wrapped in try-catch
+                try {
+                    allure includeProperties: false, results: [[path: 'playwright-tests/target/allure-results']]
+                    echo "Allure Interactive Report URL: ${env.BUILD_URL}allure/"
+                } catch (Exception e) {
+                    echo "[WARN] Allure Report generation skipped because Allure CLI is not configured in Jenkins Tools: ${e.message}"
+                    echo "[HELP] To fix this, go to Manage Jenkins -> Tools -> Allure Commandline and configure an Allure CLI installation named 'allure'."
+                }
 
                 // Print direct URLs to the reports in the console output
                 echo "=================================================="
                 echo "                  TEST REPORTS                    "
                 echo "=================================================="
                 echo "JUnit Test Report URL: ${env.BUILD_URL}testReport/"
-                echo "Allure Interactive Report URL: ${env.BUILD_URL}allure/"
                 echo "=================================================="
             }
         }
