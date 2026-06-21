@@ -78,7 +78,7 @@ mvn clean test -pl playwright-tests -D"cucumber.filter.tags=@SauceDemo"
 
 ## 3. Running the Automated Local AI Code Reviewer (`ai-reviewer`)
 
-The AI Reviewer isolates your latest staged/unstaged changes using `git diff HEAD`, strips out file rename noise, and runs a diagnostic code review using local LLM `qwen2.5-coder:14b`.
+The AI Reviewer isolates your latest staged/unstaged changes using `git diff HEAD`, filters out non-code metadata, annotates added lines with destination line numbers, and sends the prepared diff to a local Ollama model for review. The normal way to run the reviewer is by launching the Java main class directly.
 
 To compile and trigger the code reviewer:
 ```bash
@@ -91,10 +91,17 @@ mvn -pl ai-reviewer exec:java -Dexec.mainClass="com.ai.reviewer.LocalCodeReviewe
 
 *Note: Make sure you have edited or staged changes in git, otherwise the engine will report `No git changes detected.`*
 
-### Demo reviewer test block
-This repository includes a hidden test fixture in `playwright-tests/src/test/java/com/framework/steps/DemoQaSteps.java` that you can use as a live AI review demo. The block is currently wrapped in `if (false)` so it does not execute during normal test runs, but the source remains available for showing the reviewer or temporarily enabling it.
+### What `LocalCodeReviewerTest` is doing
+The file `ai-reviewer/src/test/java/com/ai/reviewer/LocalCodeReviewerTest.java` is a JUnit test suite, not the normal review runner. Its `@Test` methods verify the internal reviewer behavior, including:
+- The no-changes path returns `No changes` and does not call Ollama.
+- A successful mocked Ollama response is parsed correctly and returned.
+- A non-200 HTTP response is raised as an exception.
+- The reviewer builds the correct request payload and uses the expected endpoint.
 
-The reviewer also contains a regression test in `ai-reviewer/src/test/java/com/ai/reviewer/LocalCodeReviewerTest.java` that verifies the line-number annotation helper used to map Git diff hunks to actual file line numbers.
+So yes, use `mvn -pl ai-reviewer exec:java -Dexec.mainClass="com.ai.reviewer.LocalCodeReviewer"` to execute the AI reviewer in real usage. The `@Test` methods in `LocalCodeReviewerTest` are there to catch regressions during development and CI, not to perform the normal reviewer run.
+
+### Demo reviewer test block
+This repository also includes a hidden test fixture in `playwright-tests/src/test/java/com/framework/steps/DemoQaSteps.java` that you can use as a live AI review demo. The block is currently wrapped in `if (false)` so it does not execute during normal test runs, but the source remains available for showing the reviewer or temporarily enabling it.
 
 ---
 
