@@ -11,6 +11,11 @@ import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+/**
+ * LocalCodeReviewer reads the current git diff, filters changed code blocks,
+ * optionally annotates new lines with file line numbers, and sends the result
+ * to a local Ollama model for a code review response.
+ */
 public class LocalCodeReviewer {
 
     private final HttpClient httpClient;
@@ -23,6 +28,10 @@ public class LocalCodeReviewer {
         this.httpClient = httpClient;
     }
 
+    /**
+     * Entry point for command-line execution.
+     * Runs the reviewer and waits for the review task to complete.
+     */
     public static void main(String[] args) {
         LocalCodeReviewer reviewer = new LocalCodeReviewer();
         try {
@@ -32,6 +41,10 @@ public class LocalCodeReviewer {
         }
     }
 
+    /**
+     * Fetches the current git diff, filters it, and sends it to the local Ollama service.
+     * Returns a CompletableFuture containing the review text or an error if git diff fails.
+     */
     public CompletableFuture<String> runReview() {
         try {
             System.out.println(">>> Isolating local changes via 'git diff HEAD'...");
@@ -52,6 +65,10 @@ public class LocalCodeReviewer {
         }
     }
 
+    /**
+     * Reads the local git diff against HEAD for the current repository.
+     * Excludes the reviewer source file so the tool does not attempt to review itself.
+     */
     public String getGitDiff() throws Exception {
         // Natively targets both unstaged and staged changes in a single raw stream
         ProcessBuilder pb = new ProcessBuilder("git", "diff", "HEAD", "--", ".", ":!**/LocalCodeReviewer.java");
@@ -64,6 +81,10 @@ public class LocalCodeReviewer {
         return diffText;
     }
 
+    /**
+     * Removes diff blocks that contain only metadata and no actual added or removed code.
+     * This keeps the review payload focused on changed source lines only.
+     */
     public static String filterDiff(String rawDiff) {
         if (rawDiff == null || rawDiff.trim().isEmpty()) {
             return "";
@@ -92,6 +113,10 @@ public class LocalCodeReviewer {
         return filtered.toString();
     }
 
+    /**
+     * Adds [Line N] annotations to added lines in the diff so the reviewer can
+     * see the exact destination line number for new code.
+     */
     public static String annotateDiffWithLineNumbers(String diffText) {
         if (diffText == null || diffText.isEmpty()) {
             return diffText;
@@ -135,6 +160,10 @@ public class LocalCodeReviewer {
         return annotated.toString();
     }
 
+    /**
+     * Sends the prepared diff text to the local Ollama HTTP API and returns the model response.
+     * The model is expected to return a review string that is printed to stdout.
+     */
     public CompletableFuture<String> sendToOllama(String diffText) {
         String annotatedDiff = annotateDiffWithLineNumbers(diffText);
 
@@ -195,7 +224,7 @@ public class LocalCodeReviewer {
         String jsonPayload = gson.toJson(payloadObject);
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:11434/api/chat"))
+                .uri(URI.create("http://localhost:11434/v1/chat/completions"))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
                 .build();
@@ -215,7 +244,14 @@ public class LocalCodeReviewer {
                         throw new RuntimeException("Ollama non-200 status code: " + response.statusCode());
                     }
                     JsonObject jsonResponse = gson.fromJson(response.body(), JsonObject.class);
-                    String feedback = jsonResponse.getAsJsonObject("message").get("content").getAsString();
+                    String feedback;
+                    if (jsonResponse.has("message")) {
+                        feedback = jsonResponse.getAsJsonObject("message").get("content").getAsString();
+                    } else {
+                        feedback = jsonResponse.getAsJsonArray("choices")
+                                .get(0).getAsJsonObject()
+                                .getAsJsonObject("message").get("content").getAsString();
+                    }
                     System.out.println("\n==================================================");
                     System.out.println("                AI CODE REVIEW FEEDBACK           ");
                     System.out.println("==================================================");

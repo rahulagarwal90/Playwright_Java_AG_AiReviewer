@@ -3,10 +3,11 @@
 1. Install Ollama
 2. Run the following command in your terminal:
    ```bash
-   ollama run qwen2.5-coder:7b
+   ollama run qwen2.5-coder:14b
+   ```
 
    Step 1: Verification
-	1.	Ensure your terminal has Ollama running (ollama run qwen2.5-coder:7b).
+	1.	Ensure your terminal has Ollama running (ollama run qwen2.5-coder:14b or ollama serve).
 	2.	Open your project in VS Code.
 	3.	Make sure systemPatterns.md is saved in the root folder.
 Step 2: Open Continue Chat
@@ -19,9 +20,9 @@ name: Local Test Architecture Config
 version: 0.0.1
 schema: v1
 models:
-  - name: qwen2.5-coder:7b
+  - name: qwen2.5-coder:14b
     provider: ollama
-    model: qwen2.5-coder:7b
+    model: qwen2.5-coder:14b
     title: Local Qwen Coder
     roles:
       - chat
@@ -33,7 +34,7 @@ Cline Configuration Guardrails
 Before pasting the prompt, double-check that your Cline settings look exactly like this so that your local model doesn't run into automated timeout walls:
 •	API Provider: Ollama
 •	Base URL: http://localhost:11434
-•	Model: qwen2.5-coder:7b
+•	Model: qwen2.5-coder:14b
 •	Context Window: 32768
 •	Timeout: 60000 (Crucial to give your Mac M5 Pro 60 seconds to process terminal/file activities without killing the task)
 
