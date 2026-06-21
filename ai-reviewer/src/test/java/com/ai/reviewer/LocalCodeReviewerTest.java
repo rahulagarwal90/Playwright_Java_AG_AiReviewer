@@ -7,6 +7,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -96,5 +97,27 @@ public class LocalCodeReviewerTest {
 
         // Assert: an exception should be thrown because Ollama returned non-200.
         assertThrows(Exception.class, resultFuture::get);
+    }
+
+    @Test
+    void testParseReviewFindingsWithInlineStatusInCategoryLine() {
+        String reviewText = """
+                Playwright Web Assertions: STATUS: FAILED
+                File: playwright-tests/src/main/java/com/framework/pages/saucedemo/InventoryPage.java
+                Line: 41
+                Problem: Legacy assertion style inside page object is used.
+                AI Suggested Fix:
+                if (assertSoft) {
+                    expect(page.locator(cartIcon)).toBeVisible();
+                }
+                """;
+
+        List<LocalCodeReviewer.ReviewFinding> findings = LocalCodeReviewer.parseReviewFindings(reviewText);
+
+        assertEquals(1, findings.size());
+        assertEquals("Playwright Web Assertions", findings.get(0).category);
+        assertEquals("FAILED", findings.get(0).status);
+        assertEquals("playwright-tests/src/main/java/com/framework/pages/saucedemo/InventoryPage.java", findings.get(0).file);
+        assertEquals(41, findings.get(0).line);
     }
 }
