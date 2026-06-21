@@ -41,20 +41,24 @@ pipeline {
         stage('Execute Playwright Suites') {
             steps {
                 script {
-                    String tagParam = env.TAGS.trim()
+                    // Defensively handle null parameters if triggered before parameter initialization (first run)
+                    String browserParam = (env.BROWSER != null && env.BROWSER.trim() != "null" && env.BROWSER.trim() != "") ? env.BROWSER.trim() : "chrome"
+                    String workersParam = (env.WORKERS != null && env.WORKERS.trim() != "null" && env.WORKERS.trim() != "") ? env.WORKERS.trim() : "2"
+                    String tagParam = (env.TAGS != null && env.TAGS.trim() != "null") ? env.TAGS.trim() : ""
+                    
                     String tagArg = ""
                     if (tagParam != "") {
                         tagArg = "-Dcucumber.filter.tags=\"${tagParam}\""
-                        echo "Starting headless Playwright test run using browser: ${env.BROWSER}, filtering by tags: ${tagParam}, workers: ${env.WORKERS}..."
+                        echo "Starting headless Playwright test run using browser: ${browserParam}, filtering by tags: ${tagParam}, workers: ${workersParam}..."
                     } else {
-                        echo "Starting headless Playwright test run using browser: ${env.BROWSER}, executing ALL tests (no tag filter), workers: ${env.WORKERS}..."
+                        echo "Starting headless Playwright test run using browser: ${browserParam}, executing ALL tests (no tag filter), workers: ${workersParam}..."
                     }
                     
                     // Execute browser suites headlessly targeting only the playwright-tests sub-module
                     if (isUnix()) {
-                        sh "mvn -pl playwright-tests clean test -Dbrowser.headless=true -Dbrowser=${env.BROWSER} ${tagArg} -Dworkers=${env.WORKERS}"
+                        sh "mvn -pl playwright-tests clean test -Dbrowser.headless=true -Dbrowser=${browserParam} ${tagArg} -Dworkers=${workersParam}"
                     } else {
-                        bat "mvn -pl playwright-tests clean test -Dbrowser.headless=true -Dbrowser=${env.BROWSER} ${tagArg} -Dworkers=${env.WORKERS}"
+                        bat "mvn -pl playwright-tests clean test -Dbrowser.headless=true -Dbrowser=${browserParam} ${tagArg} -Dworkers=${workersParam}"
                     }
                 }
             }
