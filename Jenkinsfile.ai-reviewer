@@ -1,0 +1,63 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven 3.9' // Maps to local Maven 3.9 configuration
+        jdk 'JDK 21'      // Maps to local OpenJDK 21 configuration
+    }
+
+    environment {
+        // Securely inject the GitHub Personal Access Token from Jenkins Credentials Manager
+        GITHUB_TOKEN = credentials('github-pr-token')
+        
+        // Populate standard GitHub PR context variables for local git code reviewer.
+        // Jenkins Multibranch Pipelines automatically inject CHANGE_ID, CHANGE_URL, and CHANGE_AUTHOR.
+        GITHUB_REPOSITORY = "rahulagarwal90/Playwright_Java_AG_AiReviewer"
+        GITHUB_PR_NUMBER  = "${env.CHANGE_ID}"
+    }
+
+    stages {
+        stage('Verify Ollama Engine Availability') {
+            steps {
+                script {
+                    echo "Checking local Ollama service endpoint at http://localhost:11434..."
+                    if (isUnix()) {
+                        sh '''
+                            curl -s -I http://localhost:11434 > /dev/null \
+                            || (echo "[ERROR] Ollama runtime is not reachable at http://localhost:11434. Please start it on the host." && exit 1)
+                        '''
+                    } else {
+                        bat '''
+                            powershell -Command "try { $response = Invoke-WebRequest -Uri http://localhost:11434 -Method Head -UseBasicParsing; if ($response.StatusCode -ne 200) { exit 1 } } catch { exit 1 }" \
+                            || (echo [ERROR] Ollama runtime is not reachable at http://localhost:11434. Please start it on the host. && exit /b 1)
+                        '''
+                    }
+                    echo "Ollama service is up and running."
+                }
+            }
+        }
+
+        stage('Execute AI Review Gate') {
+            steps {
+                script {
+                    echo "Triggering AI Reviewer on module context 'ai-reviewer'..."
+                    // Execute only the AI Reviewer using the strict project root context pathing
+                    if (isUnix()) {
+                        sh 'mvn -pl ai-reviewer clean compile exec:java -Dexec.mainClass="com.ai.reviewer.LocalCodeReviewer"'
+                    } else {
+                        bat 'mvn -pl ai-reviewer clean compile exec:java -Dexec.mainClass="com.ai.reviewer.LocalCodeReviewer"'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "[INFO] AI Code Quality Gate passed successfully. Pull Request meets standards."
+        }
+        failure {
+            echo "[ERROR] AI Code Quality Gate failed or errors occurred during execution."
+        }
+    }
+}

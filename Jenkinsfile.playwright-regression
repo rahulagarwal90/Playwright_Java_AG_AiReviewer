@@ -1,0 +1,78 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven 3.9' // Maps to local Maven 3.9 configuration
+        jdk 'JDK 21'      // Maps to local OpenJDK 21 configuration
+    }
+
+    parameters {
+        choice(name: 'BROWSER', choices: ['chrome', 'firefox', 'webkit'], description: 'Select the browser for test execution')
+        string(name: 'TAGS', defaultValue: '', description: 'Enter the Cucumber tags to execute (e.g., @SauceDemo). Leave empty to execute ALL tests.')
+        string(name: 'WORKERS', defaultValue: '2', description: 'Number of parallel workers')
+    }
+
+    triggers {
+        cron('H 02 * * *') // Scheduled nightly run at 2 AM
+    }
+
+    environment {
+        // Defensively capture parameters with default fallbacks if triggered before parameter initialization
+        BROWSER = "${params.BROWSER ?: 'chrome'}"
+        TAGS    = "${params.TAGS ?: ''}"
+        WORKERS = "${params.WORKERS ?: '2'}"
+    }
+
+    stages {
+        stage('Install Playwright Browsers') {
+            steps {
+                script {
+                    echo "Preparing Playwright binaries and driver dependencies for browser: ${env.BROWSER}..."
+                    // Target ONLY the playwright-tests module using the project list (-pl) flag
+                    if (isUnix()) {
+                        sh 'mvn -pl playwright-tests exec:java -e -Dexec.mainClass="com.microsoft.playwright.CLI" -Dexec.args="install --with-deps"'
+                    } else {
+                        bat 'mvn -pl playwright-tests exec:java -e -Dexec.mainClass="com.microsoft.playwright.CLI" -Dexec.args="install --with-deps"'
+                    }
+                }
+            }
+        }
+        
+        stage('Execute Playwright Suites') {
+            steps {
+                script {
+                    String tagParam = env.TAGS.trim()
+                    String tagArg = ""
+                    if (tagParam != "") {
+                        tagArg = "-Dcucumber.filter.tags=\"${tagParam}\""
+                        echo "Starting headless Playwright test run using browser: ${env.BROWSER}, filtering by tags: ${tagParam}, workers: ${env.WORKERS}..."
+                    } else {
+                        echo "Starting headless Playwright test run using browser: ${env.BROWSER}, executing ALL tests (no tag filter), workers: ${env.WORKERS}..."
+                    }
+                    
+                    // Execute browser suites headlessly targeting only the playwright-tests sub-module
+                    if (isUnix()) {
+                        sh "mvn -pl playwright-tests clean test -Dbrowser.headless=true -Dbrowser=${env.BROWSER} ${tagArg} -Dworkers=${env.WORKERS}"
+                    } else {
+                        bat "mvn -pl playwright-tests clean test -Dbrowser.headless=true -Dbrowser=${env.BROWSER} ${tagArg} -Dworkers=${env.WORKERS}"
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                echo "Archiving test execution results and artifacts..."
+                
+                // Publish standard JUnit XML test results
+                junit testResults: 'playwright-tests/target/surefire-reports/*.xml', allowEmptyResults: true
+                
+                // Archive cucumber execution media assets (Videos, Screenshots, Traces) out of playwright-tests target directory.
+                // Excludes Allure DSL keywords to prevent pipeline crashes when the plugin is missing or unconfigured.
+                archiveArtifacts artifacts: 'playwright-tests/target/videos/**/*, playwright-tests/target/screenshots/**/*, playwright-tests/target/traces/**/*', allowEmptyArchive: true
+            }
+        }
+    }
+}
