@@ -41,9 +41,14 @@ public class LocalCodeReviewer {
      * Runs the reviewer and waits for the review task to complete.
      */
         private static final Pattern REVIEW_FINDING_PATTERN = Pattern.compile(
-            "(?:\\*\\*|\\[)?(.*?)(?:\\*\\*|\\])?: STATUS: \\[" +
-                "(FAILED|PASSED)\\]\\s*File:\\s*(.*?)\\s*Line:\\s*(\\d+)\\s*Problem:\\s*(.*?)\\s*AI Suggested Fix:\\s*(.*?)(?=\\n(?:(?:\\*\\*|\\[)?.*?STATUS: \\[[A-Z]+\\]|\\z))",
-            Pattern.DOTALL);
+            "(?:\\*\\*|\\[)?([A-Za-z0-9\\s&/\\-_\\(\\)]+?)(?:\\*\\*|\\])?" +
+            "(?::\\s*STATUS:\\s*\\[((?:FAILED|PASSED))\\]|:)?\\s*" +
+            "(?:\\n|\\r\\n)\\s*(?:-|\\*)*\\s*File:\\s*(.*?)\\s*" +
+            "(?:\\n|\\r\\n)\\s*(?:-|\\*)*\\s*Lines?:\\s*([\\d,\\s-]+)\\s*" +
+            "(?:\\n|\\r\\n)\\s*(?:-|\\*)*\\s*Problem:\\s*(.*?)\\s*" +
+            "(?:\\n|\\r\\n)\\s*(?:-|\\*)*\\s*(?:AI\\s*)?Suggested\\s*Fix:\\s*(.*?)" +
+            "(?=\\n(?:(?:\\*\\*|\\[)?[A-Za-z0-9\\s&/\\-_\\(\\)]+(?:\\*\\*|\\])?:|\\z))",
+            Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
     public static void main(String[] args) {
         LocalCodeReviewer reviewer = new LocalCodeReviewer();
@@ -154,9 +159,20 @@ public class LocalCodeReviewer {
         }
         String changeUrl = System.getenv("CHANGE_URL");
         if (changeUrl != null && !changeUrl.isBlank()) {
-            String[] parts = changeUrl.split("/");
-            if (parts.length >= 2) {
-                return parts[parts.length - 2] + "/" + parts[parts.length - 1];
+            try {
+                URI uri = URI.create(changeUrl);
+                String path = uri.getPath(); // e.g. /owner/repo/pull/123
+                String[] segments = path.split("/");
+                List<String> cleaned = new ArrayList<>();
+                for (String s : segments) {
+                    if (s != null && !s.isBlank()) cleaned.add(s);
+                }
+                if (cleaned.size() >= 2) {
+                    // owner = cleaned[0], repo = cleaned[1]
+                    return cleaned.get(0) + "/" + cleaned.get(1);
+                }
+            } catch (Exception e) {
+                // fall through to error below
             }
         }
         throw new IllegalStateException("Missing required GitHub repository context: GITHUB_REPOSITORY or CHANGE_URL");
@@ -289,11 +305,20 @@ public class LocalCodeReviewer {
         while (matcher.find()) {
             ReviewFinding finding = new ReviewFinding();
             finding.category = matcher.group(1).replace("*", "").replace("[", "").replace("]", "").trim();
-            finding.status = matcher.group(2).trim();
-            finding.file = matcher.group(3).trim();
-            finding.line = Integer.parseInt(matcher.group(4).trim());
-            finding.problem = matcher.group(5).trim();
-            finding.suggestedFix = matcher.group(6).trim();
+            // status is now captured in group(2) when present; default to PASSED if missing
+            String statusGroup = Optional.ofNullable(matcher.group(2)).orElse("PASSED").trim();
+            finding.status = statusGroup.isEmpty() ? "PASSED" : statusGroup;
+            finding.file = Optional.ofNullable(matcher.group(3)).orElse("").trim();
+            String lineGroup = Optional.ofNullable(matcher.group(4)).orElse("0").trim();
+            // handle ranges or comma-separated lines by taking the first numeric token
+            String firstLineToken = lineGroup.split("[,\\s-]+")[0].trim();
+            try {
+                finding.line = Integer.parseInt(firstLineToken);
+            } catch (NumberFormatException e) {
+                finding.line = 0;
+            }
+            finding.problem = Optional.ofNullable(matcher.group(5)).orElse("").trim();
+            finding.suggestedFix = Optional.ofNullable(matcher.group(6)).orElse("").trim();
             findings.add(finding);
         }
         return findings;
@@ -321,16 +346,18 @@ public class LocalCodeReviewer {
         payload.addProperty("line", finding.line);
         payload.addProperty("side", "RIGHT");
         payload.addProperty("commit_id", commitSha);
-
+        String jsonBody = new Gson().toJson(payload);
+        System.out.println("[DEBUG] Posting PR comment to: " + repo + " PR:" + prNumber + " file:" + finding.file + " line:" + finding.line);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(String.format("%s/repos/%s/pulls/%s/comments", apiBase, repo, prNumber)))
                 .header("Accept", "application/vnd.github.v3+json")
                 .header("Authorization", "Bearer " + getGitHubToken())
                 .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(new Gson().toJson(payload), StandardCharsets.UTF_8))
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8))
                 .build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        System.out.println("[DEBUG] GitHub response: " + response.statusCode() + " body: " + response.body());
         if (response.statusCode() < 200 || response.statusCode() > 299) {
             throw new RuntimeException("GitHub PR comment creation failed: " + response.statusCode() + " " + response.body());
         }
