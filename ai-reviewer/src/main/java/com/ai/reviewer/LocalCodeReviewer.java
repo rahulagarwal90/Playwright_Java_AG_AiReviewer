@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 public class LocalCodeReviewer {
 
     private static final Logger LOGGER = Logger.getLogger(LocalCodeReviewer.class.getName());
+    private static final Pattern INLINE_STATUS_PATTERN = Pattern.compile("(?i)^(.+?):\\s*STATUS:\\s*\\[?(FAILED|PASSED)\\]?");
     private final HttpClient httpClient;
 
     public LocalCodeReviewer() {
@@ -42,15 +43,6 @@ public class LocalCodeReviewer {
      * Entry point for command-line execution.
      * Runs the reviewer and waits for the review task to complete.
      */
-        private static final Pattern REVIEW_FINDING_PATTERN = Pattern.compile(
-            "(?:\\*\\*|\\[)?([A-Za-z0-9\\s&/\\-_\\(\\)]+?)(?:\\*\\*|\\])?" +
-            "(?::\\s*STATUS:\\s*\\[((?:FAILED|PASSED))\\]|:)?\\s*" +
-            "(?:\\n|\\r\\n)\\s*(?:-|\\*)*\\s*File:\\s*(.*?)\\s*" +
-            "(?:\\n|\\r\\n)\\s*(?:-|\\*)*\\s*Lines?:\\s*([\\d,\\s-]+)\\s*" +
-            "(?:\\n|\\r\\n)\\s*(?:-|\\*)*\\s*Problem:\\s*(.*?)\\s*" +
-            "(?:\\n|\\r\\n)\\s*(?:-|\\*)*\\s*(?:AI\\s*)?Suggested\\s*Fix:\\s*(.*?)" +
-            "(?=\\n(?:(?:\\*\\*|\\[)?[A-Za-z0-9\\s&/\\-_\\(\\)]+(?:\\*\\*|\\])?:|\\z))",
-            Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
     public static void main(String[] args) {
         LocalCodeReviewer reviewer = new LocalCodeReviewer();
@@ -333,20 +325,20 @@ public class LocalCodeReviewer {
                 continue;
             }
 
-            // Extract category name from first line, removing decorations like **Category**: 
+            // Extract category name from first line, removing decorations like **Category**:
             // This handles formats like "**Playwright Web Assertions:**" or "[Category]:"
             String[] lines = trimmed.split("\\n");
             String categoryLine = lines[0].trim();
 
-                // Some model responses emit "Category: STATUS: FAILED" on one line.
-                String status = "PASSED";
-                Matcher inlineStatusMatcher = Pattern.compile("(?i)^(.+?):\\s*STATUS:\\s*\\[?(FAILED|PASSED)\\]?").matcher(categoryLine);
-                if (inlineStatusMatcher.find()) {
+            // Some model responses emit "Category: STATUS: FAILED" on one line.
+            String status = "PASSED";
+            Matcher inlineStatusMatcher = INLINE_STATUS_PATTERN.matcher(categoryLine);
+            if (inlineStatusMatcher.find()) {
                 categoryLine = inlineStatusMatcher.group(1).trim();
                 status = inlineStatusMatcher.group(2).toUpperCase();
-                }
+            }
 
-                String category = categoryLine.replaceAll("^\\*\\*", "")
+            String category = categoryLine.replaceAll("^\\*\\*", "")
                     .replaceAll("\\*\\*$", "")
                     .replaceAll("^\\[", "")
                     .replaceAll("\\]$", "")
@@ -355,12 +347,12 @@ public class LocalCodeReviewer {
 
             // Extract STATUS field which may be inline (STATUS: FAILED) or on its own line
             // This is critical for detecting failed checks so GitHub comments can be posted
-                if ("PASSED".equals(status)) {
+            if ("PASSED".equals(status)) {
                 status = extractSingleLineField(trimmed, "STATUS")
-                    .map(value -> value.replaceAll("\\[|\\]", "").trim().toUpperCase())
-                    .orElse("PASSED");
-                }
-            
+                        .map(value -> value.replaceAll("\\[|\\]", "").trim().toUpperCase())
+                        .orElse("PASSED");
+            }
+
             // Extract file path, line number, problem description, and suggested fix
             // Using field extraction methods that handle multi-line content
             String file = extractSingleLineField(trimmed, "File").orElse("");
@@ -432,17 +424,21 @@ public class LocalCodeReviewer {
         String prNumber = getGitHubPullRequestNumber();
         String apiBase = getGitHubApiBase();
         String commitSha = getGitCommitSha();
+        List<String> changedFiles = getPullRequestChangedFiles(repo, prNumber, apiBase);
 
         int postedCount = 0;
         int failedCount = 0;
 
         for (ReviewFinding finding : findings) {
-            if (finding.line <= 0 || finding.file == null || finding.file.isBlank()) {
+            Optional<String> resolvedPath = resolveReviewFindingPath(finding.file, changedFiles);
+            if (finding.line <= 0 || resolvedPath.isEmpty()) {
                 LOGGER.warning(() -> "Skipping invalid review finding for GitHub comment: file="
                         + finding.file + ", line=" + finding.line + ", category=" + finding.category);
                 failedCount++;
                 continue;
             }
+
+            finding.file = resolvedPath.get();
 
             try {
                 createGitHubPullRequestComment(repo, prNumber, apiBase, commitSha, finding);
@@ -459,6 +455,89 @@ public class LocalCodeReviewer {
         if (postedCount == 0 && !findings.isEmpty()) {
             throw new RuntimeException("Failed to post any GitHub inline comments for FAILED findings.");
         }
+    }
+
+    /**
+     * Retrieves changed file paths for the pull request so bare filenames from AI output
+     * can be resolved to repository-relative paths required by GitHub inline comments API.
+     */
+    private List<String> getPullRequestChangedFiles(String repo, String prNumber, String apiBase) throws Exception {
+        List<String> changedFiles = new ArrayList<>();
+        Gson gson = new Gson();
+
+        for (int page = 1; page <= 10; page++) {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(String.format("%s/repos/%s/pulls/%s/files?per_page=100&page=%d", apiBase, repo, prNumber, page)))
+                    .header("Accept", "application/vnd.github.v3+json")
+                    .header("Authorization", "Bearer " + getGitHubToken())
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            if (response.statusCode() != 200) {
+                throw new RuntimeException("Failed to fetch PR files from GitHub: " + response.statusCode() + " " + response.body());
+            }
+
+            JsonArray files = gson.fromJson(response.body(), JsonArray.class);
+            if (files == null || files.isEmpty()) {
+                break;
+            }
+
+            for (int i = 0; i < files.size(); i++) {
+                JsonObject fileObj = files.get(i).getAsJsonObject();
+                if (fileObj.has("filename")) {
+                    changedFiles.add(normalizePath(fileObj.get("filename").getAsString()));
+                }
+            }
+
+            if (files.size() < 100) {
+                break;
+            }
+        }
+
+        return changedFiles;
+    }
+
+    /**
+     * Resolves AI-reported file identifiers to exact repository-relative paths.
+     * Supports exact paths and unique basename matches (e.g. LocalCodeReviewer.java).
+     */
+    private Optional<String> resolveReviewFindingPath(String rawPath, List<String> changedFiles) {
+        if (rawPath == null || rawPath.isBlank()) {
+            return Optional.empty();
+        }
+
+        String normalizedRawPath = normalizePath(rawPath);
+
+        if (changedFiles.contains(normalizedRawPath)) {
+            return Optional.of(normalizedRawPath);
+        }
+
+        List<String> suffixMatches = changedFiles.stream()
+                .filter(path -> path.endsWith("/" + normalizedRawPath))
+                .toList();
+        if (suffixMatches.size() == 1) {
+            return Optional.of(suffixMatches.get(0));
+        }
+
+        String rawFileName = fileNamePart(normalizedRawPath);
+        List<String> fileNameMatches = changedFiles.stream()
+                .filter(path -> fileNamePart(path).equals(rawFileName))
+                .toList();
+        if (fileNameMatches.size() == 1) {
+            return Optional.of(fileNameMatches.get(0));
+        }
+
+        return Optional.empty();
+    }
+
+    private String normalizePath(String path) {
+        return path.replace('\\', '/').replaceFirst("^\\./", "").trim();
+    }
+
+    private String fileNamePart(String path) {
+        int slashIndex = path.lastIndexOf('/');
+        return slashIndex >= 0 ? path.substring(slashIndex + 1) : path;
     }
 
     /**

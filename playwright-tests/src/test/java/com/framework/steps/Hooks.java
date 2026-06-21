@@ -114,7 +114,8 @@ public class Hooks {
                             .forEach(p -> {
                                 try {
                                     Files.deleteIfExists(p);
-                                } catch (Exception ignored) {
+                                } catch (Exception deleteError) {
+                                    logger.debug("Unable to delete cleanup artifact path: {}", p, deleteError);
                                 }
                             });
                 }

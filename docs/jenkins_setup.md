@@ -22,8 +22,8 @@ This guide provides step-by-step instructions for installing Jenkins, configurin
 ## 2. Global Tool Configuration
 
 1. Go to **Manage Jenkins** > **Tools**.
-2. **JDK**: Name = `JDK 17`, Path = your JDK folder.
-3. **Maven**: Name = `Maven 3.8`, click "Install automatically".
+2. **JDK**: Name = `JDK 21`, Path = your JDK folder.
+3. **Maven**: Name = `Maven 3.9`, click "Install automatically".
 4. **Allure**: Name = `Allure`, click "Install automatically" from Maven Central.
 
 ---
@@ -33,7 +33,7 @@ This guide provides step-by-step instructions for installing Jenkins, configurin
 1. Click **New Item** > Name it `Playwright-Java-Antigravity-Framework-Pipeline`.
 2. Choose **Multibranch Pipeline**.
 3. **Branch Sources**: Add **GitHub**.
-4. **Repository URL**: `https://github.com/rahulagarwal90/Playwright_Java_Antigravity_Framework`.
+4. **Repository URL**: `https://github.com/rahulagarwal90/Playwright_Java_AG_AiReviewer`.
 5. **Credentials**: See Step 4 below.
 
 ---
@@ -78,6 +78,12 @@ If you want **instant** triggers (instead of waiting for the 5-min poll):
 
 The framework runs a full suite every night at **2:00 AM**.
 - In Jenkins, these will show as **"Started by timer"**.
+
+### PR-triggered Regression from AI Reviewer
+
+When a PR build runs `Jenkinsfile.ai-reviewer`, it also triggers the regression job `playwright-regression-suite`
+from `post { always { ... } }`. This means PR open and PR update events can trigger regression checks automatically,
+as long as the PR commit contains the updated `Jenkinsfile.ai-reviewer`.
 
 ---
 
