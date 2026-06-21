@@ -29,7 +29,7 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh 'mvn exec:java -e -D exec.mainClass="com.microsoft.playwright.CLI" -D exec.args="install --with-deps"'
+                        sh 'mvn exec:java -e -Dexec.mainClass="com.microsoft.playwright.CLI" -Dexec.args="install --with-deps"'
                     } else {
                         bat 'mvn exec:java -e -D exec.mainClass="com.microsoft.playwright.CLI" -D exec.args="install --with-deps"'
                     }
