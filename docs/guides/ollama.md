@@ -8,7 +8,7 @@ It includes commands for starting and stopping Ollama, inspecting models, deleti
 Ollama is a local language-model runner that lets you download, manage, and run AI models on your Mac.
 It is useful for local AI code review, automation guidance, and offline model execution without sending your code to the cloud.
 
-This repo uses Ollama mainly to support AI-assisted review and local developer workflows in `ai-reviewer`.
+This repo uses Ollama mainly to support AI-assisted review and local developer workflows in `playwright-ai`.
 
 ## 2. Key Concepts
 
@@ -140,7 +140,7 @@ If you need a lower-memory alternative, use `qwen2.5-coder:7b` instead.
 ollama serve
 ```
 
-When using the `ai-reviewer`, the code sends requests to the Ollama HTTP API at `http://localhost:11434/v1/chat/completions`.
+When using the `playwright-ai`, the code sends requests to the Ollama HTTP API at `http://localhost:11434/v1/chat/completions`.
 
 This starts the Ollama background service and makes it available for CLI or API use.
 

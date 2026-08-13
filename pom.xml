@@ -11,14 +11,14 @@
 
     <modules>
         <module>playwright-tests</module>
-        <module>ai-reviewer</module>
+        <module>playwright-ai</module>
     </modules>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <playwright.version>1.42.0</playwright.version>
+        <playwright.version>1.56.0</playwright.version>
         <cucumber.version>7.15.0</cucumber.version>
         <junit.version>5.10.1</junit.version>
         <allure.version>2.25.0</allure.version>

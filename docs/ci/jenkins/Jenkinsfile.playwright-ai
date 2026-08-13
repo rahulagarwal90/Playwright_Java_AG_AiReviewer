@@ -42,12 +42,12 @@ pipeline {
         stage('Execute AI Review Gate') {
             steps {
                 script {
-                    echo "Triggering AI Reviewer on module context 'ai-reviewer'..."
+                    echo "Triggering AI Reviewer on module context 'playwright-ai'..."
                     // Execute only the AI Reviewer using the strict project root context pathing
                     if (isUnix()) {
-                        sh 'mvn -pl ai-reviewer clean compile exec:java -Dexec.mainClass="com.ai.reviewer.LocalCodeReviewer"'
+                        sh 'mvn -pl playwright-ai clean compile exec:java -Dexec.mainClass="com.ai.reviewer.LocalCodeReviewer"'
                     } else {
-                        bat 'mvn -pl ai-reviewer clean compile exec:java -Dexec.mainClass="com.ai.reviewer.LocalCodeReviewer"'
+                        bat 'mvn -pl playwright-ai clean compile exec:java -Dexec.mainClass="com.ai.reviewer.LocalCodeReviewer"'
                     }
                 }
             }

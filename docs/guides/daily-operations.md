@@ -3,8 +3,8 @@
 This document is only for day-to-day execution after setup is complete.
 For one-time installation and Jenkins configuration, use:
 
-- [README_INSTALLATION.md](README_INSTALLATION.md)
-- [docs/jenkins_setup.md](docs/jenkins_setup.md)
+- [installation.md](installation.md)
+- [../jenkins_setup.md](../jenkins_setup.md)
 
 ---
 
@@ -72,7 +72,7 @@ Use this before pushing when you want a quick local gate check.
 
 ```bash
 mvn clean compile
-mvn -pl ai-reviewer exec:java -Dexec.mainClass="com.ai.reviewer.LocalCodeReviewer"
+mvn -pl playwright-ai exec:java -Dexec.mainClass="com.ai.reviewer.LocalCodeReviewer"
 ```
 
 ### 2.2 Run Playwright tests locally
@@ -188,7 +188,7 @@ If running ollama serve in terminal, stop it with Ctrl+C.
 
 ### 6.2 PR triggered AI reviewer but not regression
 
-- Confirm PR commit includes latest `Jenkinsfile.ai-reviewer`.
+- Confirm PR commit includes latest `docs/ci/jenkins/Jenkinsfile.playwright-ai`.
 - Confirm regression job name exists in Jenkins.
 - Check AI reviewer post-action logs for downstream trigger warnings.
 
@@ -209,7 +209,7 @@ ngrok http 8080
 
 # Validate locally
 mvn clean compile
-mvn -pl ai-reviewer exec:java -Dexec.mainClass="com.ai.reviewer.LocalCodeReviewer"
+mvn -pl playwright-ai exec:java -Dexec.mainClass="com.ai.reviewer.LocalCodeReviewer"
 mvn -pl playwright-tests clean test
 
 # Stop

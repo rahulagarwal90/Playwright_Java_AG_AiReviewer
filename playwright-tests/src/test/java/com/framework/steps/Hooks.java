@@ -95,6 +95,18 @@ public class Hooks {
         }
         if (scenario.isFailed()) {
             logger.error("Scenario FAILED: {}", scenario.getName());
+            try {
+                // When a scenario fails, capture the current state of the page as an ARIA snapshot.
+                // This structured YAML accessibility representation helps the AI Healer diagnose locator/element changes.
+                if (PlaywrightFactory.getPage() != null) {
+                    String snapshot = PlaywrightFactory.getPage().locator("body").ariaSnapshot();
+                    Path contextPath = Paths.get("target/healer-accessibility-context.txt");
+                    Files.writeString(contextPath, snapshot != null ? snapshot : "");
+                    logger.info("Accessibility snapshot saved for AI Healer to: {}", contextPath.toAbsolutePath());
+                }
+            } catch (Exception e) {
+                logger.warn("Failed to capture accessibility snapshot for AI Healer: {}", e.getMessage());
+            }
         } else {
             logger.info("Scenario PASSED: {}", scenario.getName());
         }

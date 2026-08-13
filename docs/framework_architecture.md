@@ -53,7 +53,7 @@ In professional DevOps, we follow the principle of **Configuration as Code**.
 ### Secrets Management
 Sensitive data (Passwords, GitHub Tokens, API Keys) should **never** be stored in Git.
 - **The Process**: Store them in the **Jenkins Credentials Store**.
-- **Implementation**: The `Jenkinsfile` then pulls these secrets and injects them as environment variables during execution. This keeps them masked (`****`) in all logs.
+- **Implementation**: Pipeline scripts under `docs/ci/jenkins/` pull these secrets and inject them as environment variables during execution. This keeps them masked (`****`) in all logs.
 
 ---
 
@@ -84,7 +84,7 @@ To maintain a stable automation suite, we follow a strict branching and PR proce
 
 1. **Feature Branching**: Every new test or fix is developed in a separate branch (e.g., `feature/demo-qa-updates`).
 2. **Automated PR Triggers**:
-   - Once a PR is opened, Jenkins triggers the `Jenkinsfile` pipeline.
+   - Once a PR is opened, Jenkins triggers the configured pipeline script (for example `docs/ci/jenkins/Jenkinsfile.playwright-ai`).
    - Tests run in parallel (default 2 workers).
    - **Gatekeeper**: The PR cannot be merged into `main` unless all tests pass.
 3. **Traceability**: Allure reports and Playwright traces are archived for every PR run to assist in debugging failed tests before they reach the main branch.

@@ -9,7 +9,6 @@
    Step 1: Verification
 	1.	Ensure your terminal has Ollama running (ollama run qwen2.5-coder:14b or ollama serve).
 	2.	Open your project in VS Code.
-	3.	Make sure systemPatterns.md is saved in the root folder.
 Step 2: Open Continue Chat
 	1.	Press Cmd + L to open the Continue sidebar.
 	2.	Ensure Local Qwen Coder is selected at the bottom.

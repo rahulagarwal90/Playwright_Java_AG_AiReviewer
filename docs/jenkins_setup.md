@@ -81,9 +81,9 @@ The framework runs a full suite every night at **2:00 AM**.
 
 ### PR-triggered Regression from AI Reviewer
 
-When a PR build runs `Jenkinsfile.ai-reviewer`, it also triggers the regression job `playwright-regression-suite`
+When a PR build runs `docs/ci/jenkins/Jenkinsfile.playwright-ai`, it also triggers the regression job `playwright-regression-suite`
 from `post { always { ... } }`. This means PR open and PR update events can trigger regression checks automatically,
-as long as the PR commit contains the updated `Jenkinsfile.ai-reviewer`.
+as long as the PR commit contains the updated `docs/ci/jenkins/Jenkinsfile.playwright-ai`.
 
 ---
 
@@ -91,8 +91,8 @@ as long as the PR commit contains the updated `Jenkinsfile.ai-reviewer`.
 
 Since you are running on `localhost`, Jenkins normally can't "hear" GitHub. We have two ways to fix this:
 
-### A. Automatic Polling (Already in Jenkinsfile)
-The `Jenkinsfile` is now set to `pollSCM('H/5 * * * *')`. 
+### A. Automatic Polling (Already in Pipeline Script)
+The pipeline script `docs/ci/jenkins/Jenkinsfile` is set to `pollSCM('H/5 * * * *')`. 
 - Every 5 minutes, Jenkins will "ask" GitHub if there is new code on the current branch.
 
 ### B. Discovering New Branches & PRs

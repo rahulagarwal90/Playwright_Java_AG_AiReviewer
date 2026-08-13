@@ -1,8 +1,8 @@
-# Master Installation Guide (`README_INSTALLATION.md`)
+# Master Installation Guide
 
 This guide provides comprehensive, step-by-step instructions to set up the runtime dependencies, build lifecycle tools, local AI engine, Jenkins CI server, and public webhook tunnel for the **Playwright Java Antigravity Framework**.
 
-After installation is complete, use [README_IMPLEMENTATION_AND_RUNNING.md](README_IMPLEMENTATION_AND_RUNNING.md) for daily start/run/stop operations.
+After installation is complete, use [daily-operations.md](daily-operations.md) for daily start/run/stop operations.
 
 ---
 
