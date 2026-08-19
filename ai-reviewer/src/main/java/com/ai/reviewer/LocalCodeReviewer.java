@@ -747,6 +747,8 @@ public class LocalCodeReviewer {
         List<RuleStore.LearnedRule> rules = new ArrayList<>(ruleStore.load());
 
         int matchedCommentCount = 0;
+        int learnedCount = 0;
+        int botSkippedCount = 0;
         int failedExtractionCount = 0;
         if (comments != null) {
             for (int i = 0; i < comments.size(); i++) {
@@ -771,6 +773,8 @@ public class LocalCodeReviewer {
                         ? comment.getAsJsonObject("user").get("login").getAsString()
                         : "";
                 if (botUsername != null && !botUsername.isBlank() && botUsername.equals(authorLogin)) {
+                    botSkippedCount++;
+                    System.out.println("[LEARN] Skipped comment from bot account: " + authorLogin);
                     continue;
                 }
 
@@ -789,13 +793,13 @@ public class LocalCodeReviewer {
                     rule = extractRuleFromComment(body);
                 } catch (Exception ex) {
                     failedExtractionCount++;
-                    final String failedBody = body;
-                    LOGGER.warning(() -> "Skipping @ai-learn comment; rule extraction failed: "
-                            + ex.getMessage() + " (comment: " + failedBody + ")");
+                    System.out.println("[LEARN] Comment: " + body);
+                    System.out.println("[LEARN] Skipped — rule extraction failed: " + ex.getMessage());
                     continue;
                 }
-                System.out.println("[LEARN] Human comment: " + body);
+                System.out.println("[LEARN] Comment: " + body);
                 System.out.println("[LEARN] Extracted rule: " + rule);
+                learnedCount++;
 
                 RuleStore.LearnedRule learnedRule = new RuleStore.LearnedRule();
                 learnedRule.rule = rule;
@@ -805,13 +809,8 @@ public class LocalCodeReviewer {
             }
         }
 
-        if (matchedCommentCount == 0) {
-            System.out.println("[LEARN] No @ai-learn comments found on this PR. Nothing to learn.");
-        }
-        if (failedExtractionCount > 0) {
-            System.out.println("[LEARN] " + failedExtractionCount
-                    + " comment(s) failed rule extraction and were skipped; already-extracted rules are still saved.");
-        }
+        System.out.println("[LEARN] Processed " + matchedCommentCount + " @ai-learn comment(s): "
+                + learnedCount + " learned, " + (botSkippedCount + failedExtractionCount) + " skipped.");
 
         // STEP 3: persist every rule — previously-learned ones plus whatever was just extracted
         // above — to ai-reviewer/learned-rules.json. This file is meant to be committed to git,

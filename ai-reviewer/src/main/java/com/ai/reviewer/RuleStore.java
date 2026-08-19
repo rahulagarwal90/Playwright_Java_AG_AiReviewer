@@ -67,7 +67,7 @@ public class RuleStore {
                 }
                 candidate = candidate.getParent();
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
             // Fall through to the working-directory fallback below.
         }
         // Last-resort fallback for environments where the code source can't be resolved (e.g.
